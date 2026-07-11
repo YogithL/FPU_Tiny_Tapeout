@@ -6,7 +6,10 @@ SIM ?= icarus
 FST ?= -fst # Use more efficient FST format
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
-PROJECT_SOURCES = project.v
+PROJECT_SOURCES = alignmentShifter.v dadda_multiplier.v 
+daddaTestbench.v datapath_tb.v dividerLUT.v fpu_core.v 
+fpu_system.v fullAdder.v halfAdder.v 
+normalizer.v project.v rounder.v sign_gen.v
 
 ifneq ($(GATES),yes)
 
@@ -33,11 +36,11 @@ endif
 COMPILE_ARGS 		+= -I$(SRC_DIR)
 
 # Include the testbench sources:
-VERILOG_SOURCES += $(PWD)/tb.v
-TOPLEVEL = tb
+VERILOG_SOURCES += $(PWD)/tb_fpu.v
+TOPLEVEL = tb_fpu
 
 # List test modules to run, separated by commas and without the .py suffix:
-COCOTB_TEST_MODULES = test
+COCOTB_TEST_MODULES = test_fpu
 
 # include cocotb's make rules to take care of the simulator setup
 include $(shell cocotb-config --makefiles)/Makefile.sim
