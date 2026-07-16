@@ -6,11 +6,11 @@ SIM ?= icarus
 FST ?= -fst # Use more efficient FST format
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
-PROJECT_SOURCES = alignmentShifter.v dadda_multiplier.v 
-daddaTestbench.v datapath_tb.v dividerLUT.v fpu_core.v 
-fpu_system.v fullAdder.v halfAdder.v 
-normalizer.v project.v rounder.v sign_gen.v
-
+PROJECT_SOURCES = alignmentShifter.v dadda_multiplier.v \
+                  daddaTestbench.v datapath_tb.v dividerLUT.v fpu_core.v \
+                  fpu_system.v fullAdder.v halfAdder.v \
+                  normalizer.v project.v rounder.v sign_gen.v
+				  
 ifneq ($(GATES),yes)
 
 # RTL simulation:
