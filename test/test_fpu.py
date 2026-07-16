@@ -104,16 +104,16 @@ async def test_project(dut):
 
     hardware_value = int(dut.accumulate_register.value)
     
-    dut._log.info(f"Dadda Input A: {dut.fpu_core.daddaMultiplier.a.value}")
-    dut._log.info(f"Dadda Input B: {dut.fpu_core.daddaMultiplier.b.value}")
+    dut._log.info(f"Dadda Input A: {dut.dut.fpu_core.daddaMultiplier.a.value}")
+    dut._log.info(f"Dadda Input B: {dut.dut.fpu_core.daddaMultiplier.a.value}")
     
     # 2. Did the multiplier successfully calculate a product?
-    dut._log.info(f"Dadda Output: {dut.fpu_core.sum.value}")
+    dut._log.info(f"Dadda Output: {dut.dut.fpu_core.dadda_inst.product.value}")
     
     # 3. What did the rounder receive and spit out?
-    dut._log.info(f"Rounder Output: {dut.fpu_core.rounder_inst.mantissa_out.value}")
+    dut._log.info(f"Rounder Output: {dut.dut.fpu_core.rounder_inst.mantissa_out.value}")
     
-    hardware_value = int(dut.accumulate_register.value)
+    hardware_value = int(dut.dut.accumulate_register.value)
 
     assert hardware_value == exp_res, f"Math failed! Expected {hex(exp_res)}, Got {hex(hardware_value)}"
     
