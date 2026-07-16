@@ -3,8 +3,8 @@ module rounder(
     input wire[7:0] mantissa_in,
     input wire[8:0] exp_in,
     input wire G, R, S,
-    output reg[7:0] mantissa_out,
-    output reg[8:0] exp_out,
+    output reg[6:0] mantissa_out,
+    output reg[7:0] exp_out,
     output wire flag_overflow
     );
 
