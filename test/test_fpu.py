@@ -66,4 +66,46 @@ def goldenModel(A, B, op, acc, acc_reg_val):
 
 @cocotb.test()
 async def test_project(dut):
+
+    clock = Clock(dut.clk, 10, units="us")
+    cocotb.start_soon(clock.start())
+
+    #Resetting 
+    dut.reset_n.value = 0
     
+    dut.data_ready.value = 0
+    dut.A.value = 0
+    dut.B.value = 0
+    dut.op.value = ALU_Ops.NOP
+    dut.acc.value = 0
+
+    await ClockCycles(dut.clk, 3)
+    dut.reset_n.value = 1
+
+
+    #Simple test
+    await FallingEdge(dut.clk)
+
+    val_A = 0x4000
+    val_B = 0x4040
+    val_op = ALU_Ops.MUL
+    val_acc = 0
+
+    dut.A.value = val_A
+    dut.B.value = val_B
+    dut.op.value = val_op
+    dut.acc.value = val_acc
+    dut.data_ready.value = 1
+
+    await RisingEdge(dut.clk)
+    exp_res, exp_uf, exp_of, exp_nan = goldenModel(
+        val_A, val_B, val_op, val_acc, int(dut.accumulate_register.value)
+    )
+
+    hardware_value = int(dut.accumulate_register.value)
+    
+    assert hardware_value == exp_res, f"Math failed! Expected {hex(exp_res)}, Got {hex(hardware_value)}"
+    
+    dut._log.info(f"SUCCESS: Hardware matched Golden Model -> {hex(hardware_value)}")
+
+
