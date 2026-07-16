@@ -1,6 +1,6 @@
 `include "fpu_pkg.vh"
 
-module tb();
+module tb_fpu();
     // Inputs
     reg clk;
     reg reset_n;
