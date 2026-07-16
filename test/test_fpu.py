@@ -108,7 +108,7 @@ async def test_project(dut):
     dut._log.info(f"Dadda Input B: {dut.dut.fpu_core.daddaMultiplier.a.value}")
     
     # 2. Did the multiplier successfully calculate a product?
-    dut._log.info(f"Dadda Output: {dut.dut.fpu_core.daddaMultiplier.product.value}")
+    dut._log.info(f"Dadda Output: {dut.dut.fpu_core.sum.value}")
     
     # 3. What did the rounder receive and spit out?
     dut._log.info(f"Rounder Output: {dut.dut.fpu_core.rounder_inst.mantissa_out.value}")
