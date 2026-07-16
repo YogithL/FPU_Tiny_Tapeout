@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
+from cocotb.triggers import RisingEdge, FallingEdge, ClockCycles
 from enum import IntEnum
 import numpy as np
 import ml_dtypes
