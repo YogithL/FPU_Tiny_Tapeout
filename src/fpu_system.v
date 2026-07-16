@@ -43,7 +43,7 @@ module fpu_system(
         end
     end
 
-    fpu_core fpuCore(
+    fpu_core fpu_core(
         .A(input_a),
         .B(B),
         .op(op),
