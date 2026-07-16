@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, FallingEdge, ClockCycles
+from cocotb.triggers import RisingEdge, FallingEdge, ClockCycles, ReadOnly
 from enum import IntEnum
 import numpy as np
 import ml_dtypes
@@ -98,6 +98,8 @@ async def test_project(dut):
     dut.data_ready.value = 1
 
     await RisingEdge(dut.clk)
+    await ReadOnly()
+
     exp_res, exp_uf, exp_of, exp_nan = goldenModel(
         val_A, val_B, val_op, val_acc, int(dut.accumulate_register.value)
     )
