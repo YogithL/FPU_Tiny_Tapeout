@@ -75,48 +75,53 @@ class FPUTransaction:
 
     @vsc.constraint
     def val_A_rules(self):
-        self.val_A.dist
+        vsc.dist
         (
-            #10 percent Zero
-            vsc.weight(0x0000, 5),   
-            vsc.weight(0x8000, 5),   
-            
-            #10 percent Infin
-            vsc.weight(0x7F80, 5),   
-            vsc.weight(0xFF80, 5),   
-            
-            #5 percent NAN
-            vsc.weight(vsc.rng(0xFFC0, 0xFFFF), 5),
-            
-            #5 percent 1
-            vsc.weight(0x3F80, 5),
-            
-            #70 percent Normal
-            vsc.weight(vsc.rng(0x0001, 0x3F7F), 70) 
+            self.val_A,
+            [
+                # 10 percent Zero
+                vsc.weight(0x0000, 5),   
+                vsc.weight(0x8000, 5),   
+                
+                # 10 percent Infin
+                vsc.weight(0x7F80, 5),   
+                vsc.weight(0xFF80, 5),   
+                
+                # 5 percent NAN
+                vsc.weight(vsc.rng(0xFFC0, 0xFFFF), 5),
+                
+                # 5 percent 1
+                vsc.weight(0x3F80, 5),
+                
+                # 70 percent Normal
+                vsc.weight(vsc.rng(0x0001, 0x3F7F), 70) 
+            ]
         ) 
     
+    @vsc.constraint
     def val_B_rules(self):
-        self.val_B.dist
+        vsc.dist
         (
-            #10 percent Zero
-            vsc.weight(0x0000, 5),   
-            vsc.weight(0x8000, 5),   
-            
-            #10 percent Infin
-            vsc.weight(0x7F80, 5),   
-            vsc.weight(0xFF80, 5),   
-            
-            #5 percent NAN
-            vsc.weight(vsc.rng(0xFFC0, 0xFFFF), 5),
-            
-            #5 percent 1
-            vsc.weight(0x3F80, 5),
-            
-            #70 percent Normal
-            vsc.weight(vsc.rng(0x0001, 0x3F7F), 70) 
-        ) 
-
-
+            self.val_B,
+            [
+                # 10 percent Zero
+                vsc.weight(0x0000, 5),   
+                vsc.weight(0x8000, 5),   
+                
+                # 10 percent Infin
+                vsc.weight(0x7F80, 5),   
+                vsc.weight(0xFF80, 5),   
+                
+                # 5 percent NAN
+                vsc.weight(vsc.rng(0xFFC0, 0xFFFF), 5),
+                
+                # 5 percent 1
+                vsc.weight(0x3F80, 5),
+                
+                # 70 percent Normal
+                vsc.weight(vsc.rng(0x0001, 0x3F7F), 70) 
+            ]
+        )
 
 @cocotb.test()
 async def test_project(dut):
@@ -160,7 +165,7 @@ async def test_project(dut):
         await RisingEdge(dut.clk)
         await ReadOnly()
         dut.data_ready.value = 0
-        
+
         exp_res, exp_uf, exp_of, exp_nan = goldenModel(
             val_A, val_B, val_op, val_acc, int(dut.accumulate_register.value)
         )
