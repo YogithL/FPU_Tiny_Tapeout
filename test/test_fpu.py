@@ -58,6 +58,7 @@ def goldenModel(A, B, op, acc, acc_reg_val):
             flag_overflow = 1
         else:
             flag_NAN = 1
+            result_int = 0x7FC0
     
     if exponent == 0:
         if mantissa != 0:
