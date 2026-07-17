@@ -172,9 +172,9 @@ async def test_project(dut):
         )
 
         hardware_res = int(dut.accumulate_register.value)
-        hardware_uf  = int(dut.dut.fpu_core.flag_underflow) 
-        hardware_of  = int(dut.dut.fpu_core.flag_overflow)
-        hardware_nan = int(dut.dut.fpu_core.flag_NAN)
+        hardware_uf  = int(dut.dut.fpu_core.flag_underflow.value) 
+        hardware_of  = int(dut.dut.fpu_core.flag_overflow.value)
+        hardware_nan = int(dut.dut.fpu_core.flag_NAN.value)        
         
         allTestsPassed = (
             (hardware_res == exp_res) and 
