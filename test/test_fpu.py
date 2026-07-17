@@ -148,7 +148,7 @@ async def test_project(dut):
     await ClockCycles(dut.clk, 3)
     dut.reset_n.value = 1
 
-    for _ in range(100):
+    for i in range(100):
         #Driving Stim
         ##########################################
         await FallingEdge(dut.clk)
@@ -198,7 +198,7 @@ async def test_project(dut):
         )
 
         assert allTestsPassed, (
-            f"Test Failed! \n"
+            f"Test Number {i} Failed! \n"
             f"Inputs: A={hex(val_A)}, B={hex(val_B)}, OP={ALU_Ops(val_op).name}, ACC={hex(val_acc)}\n"
             f"Math: Exp {hex(exp_res)}, Got {hex(hardware_res)} \n"
             f"UF: Exp {exp_uf}, Got {hardware_uf} \n"
