@@ -48,9 +48,6 @@ def goldenModel(A, B, op, acc, acc_reg_val):
         result_bfloat = A_bfloat
     else:
         result_bfloat = np.array([0], dtype=np.uint16).view(ml_dtypes.bfloat16)
-
-    if op in (ALU_Ops.NEG, ALU_Ops.ABS, ALU_Ops.NOP, ALU_Ops.SLT):
-        return result_int, 0, 0, 0
     
     result_int = int(result_bfloat.view(np.uint16)[0])
     exponent = (result_int >> 7) & 0b1111_1111
