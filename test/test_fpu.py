@@ -160,6 +160,8 @@ async def test_project(dut):
         dut.data_ready.value = 1
         ##########################################
 
+
+
         #Scoreboard
         ##########################################
         await RisingEdge(dut.clk)
@@ -193,4 +195,12 @@ async def test_project(dut):
         
         dut._log.info(f"SUCCESS: Hardware matched Golden Model -> {hex(hardware_res)}")    ##########################################
         ##########################################
+        
 
+
+        #Reset
+        ##########################################
+        await FallingEdge(dut.clk) 
+    
+        dut.data_ready.value = 0
+        ##########################################
