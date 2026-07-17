@@ -170,10 +170,30 @@ module fpu_core(
         assign MANT_MUL_DIV_RAW = (op == `MUL) ? MANT_MUL_RAW : MANT_DIV_RAW;
 
     //MULTIPLY/DIVIDE EXPONENT CALC
+    reg[8:0] exp_mul_div_raw_reg;
+
+    always @(*) begin
+        if(op == `MUL) begin
+            exp_mul_div_raw_reg = ({1'b0, A_exp} + {1'b0, B_exp} - 9'd127);
+        end 
+
+        else if(op == `DIV) begin
+            if(A_exp >= B_exp) begin
+                exp_mul_div_raw_reg = ({1'b0, A_exp} - {1'b0, B_exp} + 9'd127);
+            end 
+            
+            else begin
+                exp_mul_div_raw_reg = 9'd0;
+            end
+        end 
+        
+        else begin
+            exp_mul_div_raw_reg = 9'd0;
+        end
+    end
+
     wire[8:0] EXP_MUL_DIV_RAW;
-        assign EXP_MUL_DIV_RAW = (op == `MUL) ? 
-        ({1'b0, A_exp} + {1'b0, B_exp} - 9'd127): 
-        ({1'b0, A_exp} - {1'b0, B_exp} + 9'd127);
+        assign EXP_MUL_DIV_RAW = exp_mul_div_raw_reg;
 
     //NORMALIZING
     reg[11:0] norm_mant_wire;

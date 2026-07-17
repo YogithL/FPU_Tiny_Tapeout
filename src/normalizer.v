@@ -33,10 +33,15 @@ module normalizer(
                 default: shift_amt = 4'd0;
             endcase
             
-            flag_underflow = shift_amt >= exp_in;
-
-            shifted = mant_in << shift_amt;
-            exp_out = exp_in - shift_amt;
+            if(shift_amt >= exp_in) begin
+                flag_underflow = 1'b1;
+                exp_out = 9'd0;
+                shifted = 12'b0;
+            end else begin
+                flag_underflow = 1'b0;
+                exp_out = exp_in - shift_amt;
+                shifted = mant_in << shift_amt;
+            end
         end
 
         mantissa_out = shifted[10:3];
