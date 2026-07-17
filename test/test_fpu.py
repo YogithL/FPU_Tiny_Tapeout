@@ -166,7 +166,6 @@ async def test_project(dut):
         ##########################################
         await RisingEdge(dut.clk)
         await ReadOnly()
-        dut.data_ready.value = 0
 
         exp_res, exp_uf, exp_of, exp_nan = goldenModel(
             val_A, val_B, val_op, val_acc, int(dut.accumulate_register.value)
