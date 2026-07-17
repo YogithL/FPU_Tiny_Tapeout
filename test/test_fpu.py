@@ -49,6 +49,9 @@ def goldenModel(A, B, op, acc, acc_reg_val):
     else:
         result_bfloat = np.array([0], dtype=np.uint16).view(ml_dtypes.bfloat16)
 
+    if op in (ALU_Ops.NEG, ALU_Ops.ABS, ALU_Ops.NOP, ALU_Ops.SLT):
+        return result_int, 0, 0, 0
+    
     result_int = int(result_bfloat.view(np.uint16)[0])
     exponent = (result_int >> 7) & 0b1111_1111
     mantissa = result_int & 0b0111_1111
@@ -63,7 +66,8 @@ def goldenModel(A, B, op, acc, acc_reg_val):
     if exponent == 0:
         if mantissa != 0:
             flag_underflow = 1
-        result_int = result_int & 0x8000
+        sign_bit = result_int & 0x8000
+        result_int = sign_bit | 0x0000
     
     if op not in (ALU_Ops.ADD, ALU_Ops.SUB, ALU_Ops.MUL, ALU_Ops.DIV):
         flag_underflow = 0
