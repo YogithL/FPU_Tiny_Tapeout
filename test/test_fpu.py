@@ -126,7 +126,7 @@ class FPUTransaction:
 @cocotb.test()
 async def test_project(dut):
 
-    clock = Clock(dut.clk, 10, units="us")
+    clock = Clock(dut.clk, 10, unit = "us")
     cocotb.start_soon(clock.start())
 
     #Resetting 
@@ -172,9 +172,9 @@ async def test_project(dut):
         )
 
         hardware_res = int(dut.accumulate_register.value)
-        hardware_uf  = int(dut.fpu_core.flag_underflow) 
-        hardware_of  = int(dut.fpu_core.flag_overflow)
-        hardware_nan = int(dut.fpu_core.flag_NAN)       
+        hardware_uf  = int(dut.dut.fpu_core.flag_underflow) 
+        hardware_of  = int(dut.dut.fpu_core.flag_overflow)
+        hardware_nan = int(dut.dut.fpu_core.flag_NAN)
         
         allTestsPassed = (
             (hardware_res == exp_res) and 
