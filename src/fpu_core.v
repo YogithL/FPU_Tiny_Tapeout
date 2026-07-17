@@ -96,7 +96,7 @@ module fpu_core(
             EXP_ADD_SUB_RAW = B_exp;
         end
         
-        shift_amt = exp_diff[3:0];
+        shift_amt = exp_diff >= 4'hF ? 4'hF : exp_diff[3:0];
     end
 
     alignment_shifter alignmentShifter(
@@ -112,8 +112,8 @@ module fpu_core(
     reg[11:0] MANT_ADD_SUB_RAW;
 
     wire[7:0] larger_mantissa;
-        assign larger_mantissa = a_greater ? {1'b1, A_mant} : {1'b1, B_mant};
-
+        assign larger_mantissa = a_greater ? {|A_exp[14:0], A_mant} : {|A_exp[14:0], B_mant};
+    
     reg eff_op;
 
     always @(*) begin
