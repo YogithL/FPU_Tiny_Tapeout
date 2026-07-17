@@ -25,6 +25,8 @@ module fpu_core(
         assign B_mant = B[6:0];
 
     //ERROR FLAGS
+    wire raw_overflow, raw_underflow, raw_NAN;
+
     wire flag_A_NAN;
         assign flag_A_NAN = (A[14:6] == 9'h1FF);
     wire flag_B_NAN;
@@ -37,9 +39,9 @@ module fpu_core(
 
     wire flag_div_by_zero;
         assign flag_div_by_zero = (op == `DIV) && (A[14:0] != 0) && (B[14:0] == 0);
-
-    //wire flag_NAN; output now
-        assign flag_NAN = (flag_A_NAN || flag_B_NAN) ||
+    
+    //wire flag_NAN; 
+        assign raw_NAN = (flag_A_NAN || flag_B_NAN) ||
         // Infinity / Infinity
         ((op == `DIV) && (A[14:0] == 15'h7F80) && (B[14:0] == 15'h7F80)) ||
         
@@ -201,7 +203,7 @@ module fpu_core(
             .G(GRS[2]),
             .R(GRS[1]),
             .S(GRS[0]),
-            .flag_underflow(flag_underflow)
+            .flag_underflow(raw_underflow)
         );
 
     //ROUNDING
@@ -216,7 +218,7 @@ module fpu_core(
             .S(GRS[0]),
             .mantissa_out(result_mant_wire),
             .exp_out(result_exp_wire),
-            .flag_overflow(flag_overflow)
+            .flag_overflow(raw_overflow)
         );
     
     wire[15:0] arithmetic_result;
@@ -264,9 +266,9 @@ module fpu_core(
             default: accumulate_enable = 1'b0;
         endcase
 
-        if(is_arith && (flag_overflow || flag_div_by_zero))
+        if(is_arith && (raw_overflow || flag_div_by_zero))
             result = {result_sign_wire, 8'hFF, 7'h00};
-        if(is_arith && flag_underflow)
+        if(is_arith && raw_underflow)
             result = 16'b0;
         
         if(result_is_zero)
@@ -279,8 +281,12 @@ module fpu_core(
         if(op == `MUL && (A_is_inf || B_is_inf))
             result = {result_sign_wire, 8'hFF, 7'h00};
 
-        if(flag_NAN)
+        if(raw_NAN)
             result = 16'h7FC0;
+        
+        assign flag_overflow = is_arith ? raw_overflow : 1'b0;
+        assign flag_underflow = is_arith ? raw_underflow : 1'b0;
+        assign flag_NAN = is_arith ? raw_NAN : 1'b0;
     end
 
 endmodule
