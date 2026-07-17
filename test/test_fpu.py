@@ -40,7 +40,7 @@ def goldenModel(A, B, op, acc, acc_reg_val):
     elif op == ALU_Ops.ABS:
         result_bfloat = np.abs(A_bfloat)
     elif op == ALU_Ops.SLT:
-        slt_val = 1 if (A_bfloat < B_bfloat)[0] else 0   
+        slt_val = 0x3F80 if (A_bfloat < B_bfloat)[0] else 0x0000
         result_bfloat = np.array([slt_val], dtype=np.uint16).view(ml_dtypes.bfloat16)
     elif op == ALU_Ops.NOP:
         result_bfloat = A_bfloat
@@ -60,8 +60,13 @@ def goldenModel(A, B, op, acc, acc_reg_val):
     if exponent == 0:
         if mantissa != 0:
             flag_underflow = 1
-        result_int = 0
+        result_int = result_int & 0x8000
     
+    if op not in (ALU_Ops.ADD, ALU_Ops.SUB, ALU_Ops.MUL, ALU_Ops.DIV):
+        flag_underflow = 0
+        flag_overflow = 0
+        flag_NAN = 0
+
     return result_int, flag_underflow, flag_overflow, flag_NAN
 
 
@@ -189,10 +194,10 @@ async def test_project(dut):
             (hardware_of == exp_of) and 
             (hardware_nan == exp_nan)
         )
-        
+
         assert allTestsPassed, (
             f"Test Failed! \n"
-            f"Inputs: A={hex(val_A)}, B={hex(val_B)}, OP={hex(val_op)}, ACC={hex(val_acc)}\n"
+            f"Inputs: A={hex(val_A)}, B={hex(val_B)}, OP={ALU_Ops(val_op).name}, ACC={hex(val_acc)}\n"
             f"Math: Exp {hex(exp_res)}, Got {hex(hardware_res)} \n"
             f"UF: Exp {exp_uf}, Got {hardware_uf} \n"
             f"OF: Exp {exp_of}, Got {hardware_of} \n"
