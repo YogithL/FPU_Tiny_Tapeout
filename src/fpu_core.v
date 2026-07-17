@@ -284,9 +284,10 @@ module fpu_core(
         if(raw_NAN)
             result = 16'h7FC0;
         
-        assign flag_overflow = is_arith ? raw_overflow : 1'b0;
-        assign flag_underflow = is_arith ? raw_underflow : 1'b0;
-        assign flag_NAN = is_arith ? raw_NAN : 1'b0;
     end
+
+    assign flag_overflow = is_arith ? raw_overflow : 1'b0;
+    assign flag_underflow = is_arith ? raw_underflow : 1'b0;
+    assign flag_NAN = is_arith ? raw_NAN : 1'b0;
 
 endmodule
