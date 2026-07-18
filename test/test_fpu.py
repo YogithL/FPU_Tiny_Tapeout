@@ -170,6 +170,8 @@ async def test_project(dut):
         dut.op.value = val_op
         dut.acc.value = val_acc
         dut.data_ready.value = 1
+
+        current_accumulate_register = int(dut.accumulate_register.value)
     ##########################################
 
 
@@ -179,7 +181,7 @@ async def test_project(dut):
         await ReadOnly()
 
         exp_res, exp_uf, exp_of, exp_nan = goldenModel(
-            val_A, val_B, val_op, val_acc, int(dut.accumulate_register.value)
+            val_A, val_B, val_op, val_acc, current_accumulate_register
         )
 
         hardware_res = int(dut.accumulate_register.value)
