@@ -36,9 +36,9 @@ def goldenModel(A, B, op, acc, acc_reg_val):
     elif op == ALU_Ops.DIV:
         result_bfloat = A_bfloat / B_bfloat
     elif op == ALU_Ops.NEG:
-        val_int = A_bfloat.view(np.uint16)[0]
-        negated_int = val_int ^ 0x8000
-        result_bfloat = np.array([negated_int], dtype=np.uint16).view(ml_dtypes.bfloat16) 
+        val_int = int(A_bfloat.view(np.uint16)[0])
+        result_int = val_int ^ 0x8000
+        return result_int, 0, 0, 0
     elif op == ALU_Ops.ABS:
         result_bfloat = np.abs(A_bfloat)
     elif op == ALU_Ops.SLT:
