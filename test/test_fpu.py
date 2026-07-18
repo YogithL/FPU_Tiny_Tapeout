@@ -45,7 +45,7 @@ def goldenModel(A, B, op, acc, acc_reg_val):
         slt_val = 0x3F80 if (A_bfloat < B_bfloat)[0] else 0x0000
         result_bfloat = np.array([slt_val], dtype=np.uint16).view(ml_dtypes.bfloat16)
     elif op == ALU_Ops.NOP:
-        result_bfloat = A_bfloat
+        result_bfloat = np.array([acc_reg_val], dtype=np.uint16).view(ml_dtypes.bfloat16)
     else:
         result_bfloat = np.array([0], dtype=np.uint16).view(ml_dtypes.bfloat16)
     
