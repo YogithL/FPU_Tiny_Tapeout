@@ -114,7 +114,7 @@ module fpu_core(
     reg[11:0] MANT_ADD_SUB_RAW;
 
     wire[7:0] larger_mantissa;
-        assign larger_mantissa = a_greater ? {|A_exp, A_mant} : {|B_exp, B_mant};    
+        assign larger_mantissa = a_greater ? {(|A_exp), A_mant} : {(|B_exp), B_mant};    
     
     reg eff_op;
 
@@ -146,12 +146,12 @@ module fpu_core(
         );
 
     wire[7:0] dadda_wire;
-        assign dadda_wire = (op == `MUL) ? {|B_exp, B_mant} : recip_B;
+        assign dadda_wire = (op == `MUL) ? {(|B_exp), B_mant} : recip_B;
     
     wire[15:0] row1, row2;
     
     dadda_multiplier daddaMultiplier(
-            .a({|A_exp, A_mant}),
+            .a({(|A_exp), A_mant}),
             .b(dadda_wire),
             .factor1(row1),
             .factor2(row2)
