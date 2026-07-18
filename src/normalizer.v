@@ -12,7 +12,13 @@ module normalizer(
     reg[11:0] shifted;
     
     always @(*) begin
-        if(mant_in[11]) begin
+        if(mant_in == 12'b0) begin
+            shifted = 12'b0;
+            exp_out = 9'd0;
+            flag_underflow = 1'b0;
+        end
+
+        else if(mant_in[11]) begin
             shifted = {1'b0, mant_in[11:2], mant_in[1] | mant_in[0]};
             exp_out = exp_in + 9'd1;
             flag_underflow = 1'b0;

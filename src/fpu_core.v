@@ -280,11 +280,10 @@ module fpu_core(
         if(is_arith && (raw_overflow || flag_div_by_zero))
             result = {result_sign_wire, 8'hFF, 7'h00};
         if(is_arith && raw_underflow)
-            result = 16'b0;
+            result = {result_sign_wire, 15'b0};
         
         if(result_is_zero)
-            result = 16'h0000;
-
+            result = {result_sign_wire, 15'b0};
         if(op == `DIV && A_is_inf && !B_is_inf)
             result = {result_sign_wire, 8'hFF, 7'h00};
         if(op == `DIV && B_is_inf && !A_is_inf)
