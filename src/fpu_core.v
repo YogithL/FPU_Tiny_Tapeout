@@ -173,23 +173,14 @@ module fpu_core(
     reg[8:0] exp_mul_div_raw_reg;
 
     always @(*) begin
-        if(op == `MUL) begin
-            exp_mul_div_raw_reg = ({1'b0, A_exp} + {1'b0, B_exp} - 9'd127);
-        end 
+        if(op == `MUL)
+            exp_mul_div_raw_reg = ({1'b0, A_exp} + {1'b0, B_exp} - 9'd127); 
 
-        else if(op == `DIV) begin
-            if(A_exp >= B_exp) begin
-                exp_mul_div_raw_reg = ({1'b0, A_exp} - {1'b0, B_exp} + 9'd127);
-            end 
-            
-            else begin
-                exp_mul_div_raw_reg = 9'd0;
-            end
-        end 
-        
-        else begin
+        else if(op == `DIV) 
+            exp_mul_div_raw_reg = ({1'b0, A_exp} + 9'd127) - {1'b0, B_exp}; 
+                    
+        else 
             exp_mul_div_raw_reg = 9'd0;
-        end
     end
 
     wire[8:0] EXP_MUL_DIV_RAW;
