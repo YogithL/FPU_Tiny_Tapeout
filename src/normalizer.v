@@ -15,6 +15,7 @@ module normalizer(
         if(mant_in[11]) begin
             shifted = {1'b0, mant_in[11:2], mant_in[1] | mant_in[0]};
             exp_out = exp_in + 9'd1;
+            flag_underflow = 1'b0;
         end
         
         else begin
