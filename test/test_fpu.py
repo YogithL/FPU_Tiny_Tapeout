@@ -185,10 +185,10 @@ async def test_project(dut):
         )
 
         hardware_res = int(dut.accumulate_register.value)
-        hardware_uf  = int(dut.dut.fpu_core.flag_underflow.value) 
-        hardware_of  = int(dut.dut.fpu_core.flag_overflow.value)
-        hardware_nan = int(dut.dut.fpu_core.flag_NAN.value)        
-        
+        hardware_uf  = int(dut.flag_underflow.value) 
+        hardware_of  = int(dut.flag_overflow.value)
+        hardware_nan = int(dut.flag_NAN.value)   
+             
         if val_op == ALU_Ops.DIV:
             hardware_res_accurate = (hardware_res == exp_res) or \
                                     (hardware_res + 1 == exp_res) or \
