@@ -23,6 +23,11 @@ def goldenModel(A, B, op, acc, acc_reg_val):
     B_bfloat = np.array([B], dtype=np.uint16).view(ml_dtypes.bfloat16)
     
     flag_NAN = flag_overflow = flag_underflow = 0   
+    A_val_int = int(A_bfloat.view(np.uint16)[0])
+    B_val_int = int(B_bfloat.view(np.uint16)[0])
+    A_is_inf = (A_val_int & 0x7FFF) == 0x7F80
+    B_is_inf = (B_val_int & 0x7FFF) == 0x7F80
+    is_div_by_zero = (op == ALU_Ops.DIV) and ((B_val_int & 0x7FFF) == 0)
 
     if acc == 1:
         A_bfloat = np.array([acc_reg_val], dtype=np.uint16).view(ml_dtypes.bfloat16)
@@ -55,11 +60,12 @@ def goldenModel(A, B, op, acc, acc_reg_val):
     
     if exponent == 0b1111_1111: 
         if mantissa == 0:
-            flag_overflow = 1
+            if not (A_is_inf or B_is_inf or is_div_by_zero):
+                flag_overflow = 1
         else:
             flag_NAN = 1
-            result_int = 0x7FC0
-    
+            result_int = 0x7FC0   
+
     if exponent == 0:
         if mantissa != 0:
             flag_underflow = 1
