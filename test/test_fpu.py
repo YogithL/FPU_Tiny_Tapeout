@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, FallingEdge, ClockCycles, ReadOnly
@@ -5,8 +7,6 @@ from enum import IntEnum
 import numpy as np
 import ml_dtypes
 import vsc
-
-global acc_reg
 
 class ALU_Ops(IntEnum):
     ADD = 0  
@@ -139,6 +139,7 @@ async def test_project(dut):
     cocotb.start_soon(clock.start())
 
     #Resetting 
+    ##########################################
     dut.reset_n.value = 0
     
     dut.data_ready.value = 0
@@ -149,10 +150,12 @@ async def test_project(dut):
 
     await ClockCycles(dut.clk, 3)
     dut.reset_n.value = 1
+    ##########################################
 
+
+    #Driving Stim
+    ##########################################
     for i in range(100):
-        #Driving Stim
-        ##########################################
         await FallingEdge(dut.clk)
         txn = FPUTransaction()
         txn.randomize()
@@ -167,8 +170,7 @@ async def test_project(dut):
         dut.op.value = val_op
         dut.acc.value = val_acc
         dut.data_ready.value = 1
-        ##########################################
-
+    ##########################################
 
 
         #Scoreboard
@@ -211,7 +213,6 @@ async def test_project(dut):
         dut._log.info(f"SUCCESS: Hardware matched Golden Model -> {hex(hardware_res)}")    ##########################################
         ##########################################
         
-
 
         #Reset
         ##########################################
