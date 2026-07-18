@@ -31,7 +31,7 @@ module fpu_system(
         end
 
         else if(data_ready) begin
-            if(accumulate_enable) begin
+            if(accumulate_register_enable) begin
                 accumulate_register <= datapath_result;
             end
             
