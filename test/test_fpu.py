@@ -184,11 +184,24 @@ async def test_project(dut):
             val_A, val_B, val_op, val_acc, current_accumulate_register
         )
 
-        hardware_res = int(dut.accumulate_register.value)
-        hardware_uf  = int(dut.flag_underflow.value) 
-        hardware_of  = int(dut.flag_overflow.value)
-        hardware_nan = int(dut.flag_NAN.value)   
-             
+        try:
+            hardware_res = int(dut.accumulate_register.value)
+            hardware_uf  = int(dut.flag_underflow.value) 
+            hardware_of  = int(dut.flag_overflow.value)
+            hardware_nan = int(dut.flag_NAN.value) 
+        except ValueError:
+            # THIS CATCHES THE 'X' BUG!
+            dut._log.error(f"X/Z STATE DETECTED IN HARDWARE!")
+            dut._log.error(f"Inputs: A={hex(val_A)}, B={hex(val_B)}, OP={ALU_Ops(val_op).name}, ACC={hex(val_acc)}")
+            dut._log.error(f"Raw Accumulator: {dut.accumulate_register.value.binstr}")
+            
+            # Drill down to find where the X started
+            dut._log.error(f"FPU Core Result: {dut.dut.fpu_core.result.value.binstr}")
+            dut._log.error(f"Adder Result:    {dut.dut.fpu_core.MANT_ADD_SUB_RAW.value.binstr}")
+            dut._log.error(f"Mul/Div Result:  {dut.dut.fpu_core.MANT_MUL_DIV_RAW.value.binstr}")
+            
+            assert False, "Simulation stopped due to X/Z propagation."
+        
         if val_op == ALU_Ops.DIV:
             hardware_res_accurate = (hardware_res == exp_res) or \
                                     (hardware_res + 1 == exp_res) or \
@@ -212,7 +225,7 @@ async def test_project(dut):
             f"NAN: Exp {exp_nan}, Got {hardware_nan}"
         )
         
-        dut._log.info(f"SUCCESS: Hardware matched Golden Model -> {hex(hardware_res)}")    ##########################################
+        dut._log.info(f"Test Number {i} Success!: Hardware matched Golden Model -> {hex(hardware_res)}")    ##########################################
         ##########################################
         
 
