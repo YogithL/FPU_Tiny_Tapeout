@@ -31,6 +31,7 @@ module fpu_core(
         assign flag_A_NAN = (A[14:6] == 9'h1FF);
     wire flag_B_NAN;
         assign flag_B_NAN = (B[14:6] == 9'h1FF);
+    wire either_nan = A_is_nan | B_is_nan;
 
     wire A_is_inf;
         assign A_is_inf = (A[14:0] == 15'h7F80);
@@ -264,7 +265,7 @@ module fpu_core(
                 SLT = 16'h3F80;
         end
 
-        if(a_b_equal)
+        if(a_b_equal || either_nan)
             SLT = 16'h0000;
     end
 
