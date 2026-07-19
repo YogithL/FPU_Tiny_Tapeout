@@ -22,15 +22,15 @@ def goldenModel(A, B, op, acc, acc_reg_val):
     A_bfloat = np.array([A], dtype=np.uint16).view(ml_dtypes.bfloat16)
     B_bfloat = np.array([B], dtype=np.uint16).view(ml_dtypes.bfloat16)
     
+    if acc == 1:
+        A_bfloat = np.array([acc_reg_val], dtype=np.uint16).view(ml_dtypes.bfloat16)
+
     flag_NAN = flag_overflow = flag_underflow = 0   
     A_val_int = int(A_bfloat.view(np.uint16)[0])
     B_val_int = int(B_bfloat.view(np.uint16)[0])
     A_is_inf = (A_val_int & 0x7FFF) == 0x7F80
     B_is_inf = (B_val_int & 0x7FFF) == 0x7F80
     is_div_by_zero = (op == ALU_Ops.DIV) and ((B_val_int & 0x7FFF) == 0)
-
-    if acc == 1:
-        A_bfloat = np.array([acc_reg_val], dtype=np.uint16).view(ml_dtypes.bfloat16)
 
     if op == ALU_Ops.ADD:
         result_bfloat = A_bfloat + B_bfloat
