@@ -309,8 +309,8 @@ module fpu_core(
         
     end
 
-    assign flag_overflow = is_arith ? (raw_overflow || !either_inf) : 1'b0;
-    assign flag_underflow = is_arith ? (raw_overflow || !either_inf) : 1'b0;
+    assign flag_overflow = is_arith ? (raw_overflow && !either_inf && !flag_div_by_zero) : 1'b0;
+    assign flag_underflow = is_arith ? (raw_underflow && !either_inf) : 1'b0;    
     assign flag_NAN = is_arith ? raw_NAN : 1'b0;
 
 endmodule
