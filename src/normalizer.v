@@ -40,7 +40,7 @@ module normalizer(
                 default: shift_amt = 4'd0;
             endcase
             
-            if(shift_amt > exp_in) begin
+            if(shift_amt >= exp_in) begin
                 flag_underflow = 1'b1;
                 exp_out = 9'd0;
                 shifted = 12'b0;
