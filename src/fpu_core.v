@@ -36,6 +36,8 @@ module fpu_core(
         assign A_is_inf = (A[14:0] == 15'h7F80);
     wire B_is_inf;
         assign B_is_inf = (B[14:0] == 15'h7F80);
+    wire either_inf
+        assign either_inf = A_is_inf || B_is_inf;
 
     wire flag_div_by_zero;
         assign flag_div_by_zero = (op == `DIV) && (A[14:0] != 0) && (B[14:0] == 0);
@@ -307,8 +309,8 @@ module fpu_core(
         
     end
 
-    assign flag_overflow = is_arith ? raw_overflow : 1'b0;
-    assign flag_underflow = is_arith ? raw_underflow : 1'b0;
+    assign flag_overflow = is_arith ? (raw_overflow || !either_inf) : 1'b0;
+    assign flag_underflow = is_arith ? (raw_overflow || !either_inf) : 1'b0;
     assign flag_NAN = is_arith ? raw_NAN : 1'b0;
 
 endmodule
