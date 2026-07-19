@@ -311,9 +311,8 @@ module fpu_core(
             default: accumulate_enable = 1'b0;
         endcase
 
-        if(is_arith && (raw_overflow || flag_div_by_zero))
-            result = {result_sign_wire, 8'hFF, 7'h00};
-        
+        if(is_arith && (raw_overflow || deep_overflow_div || flag_div_by_zero))
+            result = {result_sign_wire, 8'hFF, 7'h00};        
         if(is_arith && true_underflow)
             result = {result_sign_wire, 15'b0};
         
@@ -336,11 +335,17 @@ module fpu_core(
             result = 16'h7FC0;
     end
     
+    wire deep_overflow_div = (op == `DIV) && !either_inf && !either_zero &&
+    (
+        ({1'b0, A_exp} > ({1'b0, B_exp} + 9'd128)) || 
+        (({1'b0, A_exp} == ({1'b0, B_exp} + 9'd128)) && (A_mant >= B_mant))
+    );
+
     wire deep_underflow_mul = (op == `MUL) && (mul_sum < 9'd127) && !either_zero;
 
     wire true_underflow = raw_underflow || deep_underflow_mul;
 
-    assign flag_overflow = is_arith ? (raw_overflow && !either_inf && !flag_div_by_zero && !raw_NAN) : 1'b0;    
+    assign flag_overflow = is_arith ? ((raw_overflow || deep_overflow_div) && !either_inf && !flag_div_by_zero && !raw_NAN) : 1'b0;    
     assign flag_underflow = is_arith ? (true_underflow && !either_inf && !either_zero && !raw_NAN) : 1'b0;    
     assign flag_NAN = is_arith ? raw_NAN : 1'b0;
 
