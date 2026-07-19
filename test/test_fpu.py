@@ -369,8 +369,8 @@ async def test_project(dut):
                             f"NAN: Exp {exp_nan}, Got {hardware_nan}"
                         )
                         error_count += 1
-                    else:
-                        dut._log.info(f"Test Number {test_count} Success!: Hardware matched Golden Model -> {hex(hardware_res)}")
+                    #else:
+                    #    dut._log.info(f"Test Number {test_count} Success!: Hardware matched Golden Model -> {hex(hardware_res)}")
                     
                     test_count += 1
                     
