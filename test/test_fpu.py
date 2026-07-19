@@ -21,7 +21,8 @@ class ALU_Ops(IntEnum):
 def goldenModel(A, B, op, acc, acc_reg_val):
     A_bfloat = np.array([A], dtype=np.uint16).view(ml_dtypes.bfloat16)
     B_bfloat = np.array([B], dtype=np.uint16).view(ml_dtypes.bfloat16)
-    
+    is_arithmetic = op in [ALU_Ops.ADD, ALU_Ops.SUB, ALU_Ops.MUL, ALU_Ops.DIV]
+
     if acc == 1:
         A_bfloat = np.array([acc_reg_val], dtype=np.uint16).view(ml_dtypes.bfloat16)
 
@@ -29,12 +30,13 @@ def goldenModel(A, B, op, acc, acc_reg_val):
     
     A_val_int = int(A_bfloat.view(np.uint16)[0])
     B_val_int = int(B_bfloat.view(np.uint16)[0])
-    if ((A_val_int >> 7) & 0xFF) == 0: 
-        A_val_int = A_val_int & 0x8000
-        
-    if ((B_val_int >> 7) & 0xFF) == 0: 
-        B_val_int = B_val_int & 0x8000
-
+    
+    if is_arithmetic:
+        if ((A_val_int >> 7) & 0xFF) == 0: 
+            A_val_int = A_val_int & 0x8000
+            
+        if ((B_val_int >> 7) & 0xFF) == 0: 
+            B_val_int = B_val_int & 0x8000
 
     A_is_inf = (A_val_int & 0x7FFF) == 0x7F80
     B_is_inf = (B_val_int & 0x7FFF) == 0x7F80
@@ -49,15 +51,18 @@ def goldenModel(A, B, op, acc, acc_reg_val):
         result_bfloat = A_bfloat * B_bfloat
     elif op == ALU_Ops.DIV:
         result_bfloat = A_bfloat / B_bfloat
+    
     elif op == ALU_Ops.NEG:
         val_int = int(A_bfloat.view(np.uint16)[0])
         result_int = val_int ^ 0x8000
         return result_int, 0, 0, 0
     elif op == ALU_Ops.ABS:
         result_bfloat = np.abs(A_bfloat)
+    
     elif op == ALU_Ops.SLT:
         slt_val = 0x3F80 if (A_bfloat < B_bfloat)[0] else 0x0000
         result_bfloat = np.array([slt_val], dtype=np.uint16).view(ml_dtypes.bfloat16)
+    
     elif op == ALU_Ops.NOP:
         result_bfloat = np.array([acc_reg_val], dtype=np.uint16).view(ml_dtypes.bfloat16)
     else:
@@ -72,7 +77,7 @@ def goldenModel(A, B, op, acc, acc_reg_val):
             if not (A_is_inf or B_is_inf or is_div_by_zero):
                 flag_overflow = 1
         else:
-            if op in (ALU_Ops.ADD, ALU_Ops.SUB, ALU_Ops.MUL, ALU_Ops.DIV):
+            if is_arithmetic:
                 flag_NAN = 1
                 result_int = 0x7FC0
 
@@ -91,7 +96,7 @@ def goldenModel(A, B, op, acc, acc_reg_val):
             elif op == ALU_Ops.DIV and not A_is_zero and not B_is_inf:
                 flag_underflow = 1    
     
-    if op not in (ALU_Ops.ADD, ALU_Ops.SUB, ALU_Ops.MUL, ALU_Ops.DIV):
+    if not is_arithmetic:
         flag_underflow = 0
         flag_overflow = 0
         flag_NAN = 0
