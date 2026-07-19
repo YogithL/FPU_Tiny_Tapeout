@@ -67,15 +67,20 @@ def goldenModel(A, B, op, acc, acc_reg_val):
                 flag_NAN = 1
                 result_int = 0x7FC0
 
-    elif exponent == 0 and mantissa == 0:
-        A_is_zero = (A_val_int & 0x7FFF) == 0
-        B_is_zero = (B_val_int & 0x7FFF) == 0
-        
-        if op == ALU_Ops.MUL and not A_is_zero and not B_is_zero:
+    elif exponent == 0 :
+        if mantissa != 0:
             flag_underflow = 1
+            result_int = result_int & 0x8000
+        
+        else:    
+            A_is_zero = (A_val_int & 0x7FFF) == 0
+            B_is_zero = (B_val_int & 0x7FFF) == 0
             
-        elif op == ALU_Ops.DIV and not A_is_zero and not B_is_inf:
-            flag_underflow = 1    
+            if op == ALU_Ops.MUL and not A_is_zero and not B_is_zero:
+                flag_underflow = 1
+                
+            elif op == ALU_Ops.DIV and not A_is_zero and not B_is_inf:
+                flag_underflow = 1    
     
     if op not in (ALU_Ops.ADD, ALU_Ops.SUB, ALU_Ops.MUL, ALU_Ops.DIV):
         flag_underflow = 0
