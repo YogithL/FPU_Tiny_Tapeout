@@ -166,7 +166,7 @@ async def test_project(dut):
 
     #Driving Stim
     ##########################################
-    for i in range(100):
+    for i in range(4000):
         await FallingEdge(dut.clk)
         txn = FPUTransaction()
         txn.randomize()
