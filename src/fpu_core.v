@@ -36,7 +36,7 @@ module fpu_core(
         assign A_is_inf = (A[14:0] == 15'h7F80);
     wire B_is_inf;
         assign B_is_inf = (B[14:0] == 15'h7F80);
-    wire either_inf
+    wire either_inf;
         assign either_inf = A_is_inf || B_is_inf;
 
     wire flag_div_by_zero;
