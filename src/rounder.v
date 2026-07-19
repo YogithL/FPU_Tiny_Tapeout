@@ -12,8 +12,6 @@ module rounder(
     
     reg[8:0] temp_exp; 
 
-    assign flag_overflow = temp_exp[8] | (&temp_exp[7:0]); 
-
     always @(*) begin
         round_up = G & (R | S | mantissa_in[0]);
         rounded_mantissa = {1'b0, mantissa_in} + {8'b0, round_up};
@@ -22,11 +20,14 @@ module rounder(
             mantissa_out = rounded_mantissa[7:1];
             temp_exp = exp_in + 9'd1;
         end
+        
         else begin
             mantissa_out = rounded_mantissa[6:0];
             temp_exp = exp_in;
         end
         
+        flag_overflow = temp_exp[8] | (&temp_exp[7:0]);
+
         exp_out = temp_exp[7:0];
     end
 
