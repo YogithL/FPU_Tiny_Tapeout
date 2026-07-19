@@ -4,6 +4,7 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, FallingEdge, ClockCycles, ReadOnly
 from enum import IntEnum
+import random 
 import numpy as np
 import ml_dtypes
 import vsc
@@ -165,8 +166,7 @@ class FPUTransaction:
         )
 
 def get_adversarial_B(A):
-    return 
-    [
+    return [
         # Equal
         A,
         # Sign flipped
