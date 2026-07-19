@@ -63,8 +63,9 @@ def goldenModel(A, B, op, acc, acc_reg_val):
             if not (A_is_inf or B_is_inf or is_div_by_zero):
                 flag_overflow = 1
         else:
-            flag_NAN = 1
-            result_int = 0x7FC0   
+            if op in (ALU_Ops.ADD, ALU_Ops.SUB, ALU_Ops.MUL, ALU_Ops.DIV):
+                flag_NAN = 1
+                result_int = 0x7FC0
 
     elif exponent == 0 and mantissa == 0:
         A_is_zero = (A_val_int & 0x7FFF) == 0
