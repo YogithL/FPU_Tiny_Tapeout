@@ -304,7 +304,8 @@ module fpu_core(
         if(op == `MUL && (A_is_inf || B_is_inf))
             result = {result_sign_wire, 8'hFF, 7'h00};
 
-        if(raw_NAN)
+        //Only arith compute (mul, div, add, sub) can trigger flags
+        if(flag_NAN)
             result = 16'h7FC0;
         
     end
@@ -314,6 +315,7 @@ module fpu_core(
     wire true_underflow = raw_underflow || deep_underflow_mul;
 
     assign flag_overflow = is_arith ? (raw_overflow && !either_inf && !flag_div_by_zero) : 1'b0;
-    assign flag_underflow = is_arith ? (true_underflow && !either_inf) : 1'b0;    assign flag_NAN = is_arith ? raw_NAN : 1'b0;
+    assign flag_underflow = is_arith ? (true_underflow && !either_inf) : 1'b0;    
+    assign flag_NAN = is_arith ? raw_NAN : 1'b0;
 
 endmodule
