@@ -38,8 +38,11 @@ def goldenModel(A, B, op, acc, acc_reg_val):
     
     A_is_inf = (A_val_int & 0x7FFF) == 0x7F80
     B_is_inf = (B_val_int & 0x7FFF) == 0x7F80
-    
-    is_div_by_zero = (op == ALU_Ops.DIV) and ((B_val_int & 0x7FFF) == 0)
+
+    A_is_zero = (A_val_int & 0x7FFF) == 0
+    B_is_zero = (B_val_int & 0x7FFF) == 0
+
+    is_div_by_zero = (op == ALU_Ops.DIV) and B_is_zero
 
     if op == ALU_Ops.ADD:
         result_bfloat = A_bfloat + B_bfloat
@@ -89,10 +92,7 @@ def goldenModel(A, B, op, acc, acc_reg_val):
             flag_underflow = 1
             result_int = result_int & 0x8000
         
-        else:    
-            A_is_zero = (A_val_int & 0x7FFF) == 0
-            B_is_zero = (B_val_int & 0x7FFF) == 0
-            
+        else:                
             if op == ALU_Ops.MUL and not A_is_zero and not B_is_zero:
                 flag_underflow = 1
                 
@@ -187,7 +187,7 @@ async def test_project(dut):
 
     #Driving Stim
     ##########################################
-    for i in range(4000):
+    for i in range(10000):
         await FallingEdge(dut.clk)
         txn = FPUTransaction()
         txn.randomize()
