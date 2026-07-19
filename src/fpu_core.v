@@ -34,10 +34,12 @@ module fpu_core(
     wire either_nan;
         assign either_nan = flag_A_NAN || flag_B_NAN;
 
+    //Don't check mantissa here because we flush subnormals to zero
     wire A_is_zero;
-        assign A_is_zero = ({A_exp, A_mant} == 15'h0000);
+        assign A_is_zero = (A_exp == 15'h0000);
     wire B_is_zero;
-        assign B_is_zero = ({B_exp, B_mant} == 15'h0000);
+        assign B_is_zero = (B_exp == 15'h0000);
+
     wire either_zero;
         assign either_zero = A_is_zero || B_is_zero;
     wire both_zero;
@@ -309,12 +311,16 @@ module fpu_core(
         
         if(result_is_zero)
             result = {result_sign_wire, 15'b0};
+        
         if(op == `DIV && A_is_inf && !B_is_inf)
             result = {result_sign_wire, 8'hFF, 7'h00};
         if(op == `DIV && B_is_inf && !A_is_inf)
             result = {result_sign_wire, 8'h00, 7'h00};
+
         if(op == `MUL && (A_is_inf || B_is_inf))
             result = {result_sign_wire, 8'hFF, 7'h00};
+        if(op == `MUL && either_zero)
+            result = {result_sign_wire, 15'b0};
 
         //Only arith compute (mul, div, add, sub) can trigger flags
         if(flag_NAN)

@@ -26,10 +26,19 @@ def goldenModel(A, B, op, acc, acc_reg_val):
         A_bfloat = np.array([acc_reg_val], dtype=np.uint16).view(ml_dtypes.bfloat16)
 
     flag_NAN = flag_overflow = flag_underflow = 0   
+    
     A_val_int = int(A_bfloat.view(np.uint16)[0])
     B_val_int = int(B_bfloat.view(np.uint16)[0])
+    if ((A_val_int >> 7) & 0xFF) == 0: 
+        A_val_int = A_val_int & 0x8000
+        
+    if ((B_val_int >> 7) & 0xFF) == 0: 
+        B_val_int = B_val_int & 0x8000
+
+
     A_is_inf = (A_val_int & 0x7FFF) == 0x7F80
     B_is_inf = (B_val_int & 0x7FFF) == 0x7F80
+    
     is_div_by_zero = (op == ALU_Ops.DIV) and ((B_val_int & 0x7FFF) == 0)
 
     if op == ALU_Ops.ADD:
