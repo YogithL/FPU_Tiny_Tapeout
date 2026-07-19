@@ -4,7 +4,7 @@ module rounder(
     input wire G, R, S,
     output reg[6:0] mantissa_out,
     output reg[7:0] exp_out,
-    output wire flag_overflow
+    output reg flag_overflow
     );
 
     reg round_up;
@@ -20,7 +20,7 @@ module rounder(
             mantissa_out = rounded_mantissa[7:1];
             temp_exp = exp_in + 9'd1;
         end
-        
+
         else begin
             mantissa_out = rounded_mantissa[6:0];
             temp_exp = exp_in;

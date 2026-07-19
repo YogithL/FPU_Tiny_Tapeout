@@ -120,7 +120,7 @@ module fpu_core(
             EXP_ADD_SUB_RAW = B_exp;
         end
         
-        shift_amt = exp_diff >= 4'hF ? 4'hF : exp_diff[3:0];
+        shift_amt = (exp_diff >= 4'hF) ? 4'hF : exp_diff[3:0];
     end
 
     alignment_shifter alignmentShifter(
