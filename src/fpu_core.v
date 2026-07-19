@@ -325,9 +325,9 @@ module fpu_core(
         if(op == `DIV && B_is_inf && !A_is_inf)
             result = {result_sign_wire, 8'h00, 7'h00};
 
-        if(op == `MUL && (A_is_inf || B_is_inf))
-            result = {result_sign_wire, 8'hFF, 7'h00};
-            
+        if((op == `MUL || op == `ADD || op == `SUB) && either_inf)
+            result = {result_sign_wire, 8'hFF, 7'h00};            
+        
         if(op == `MUL && either_zero)
             result = {result_sign_wire, 15'b0};
 
