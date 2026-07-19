@@ -292,7 +292,7 @@ module fpu_core(
 
         if(is_arith && (raw_overflow || flag_div_by_zero))
             result = {result_sign_wire, 8'hFF, 7'h00};
-        if(is_arith && raw_underflow)
+        if(is_arith && true_underflow)
             result = {result_sign_wire, 15'b0};
         
         if(result_is_zero)
