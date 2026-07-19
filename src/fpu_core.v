@@ -24,6 +24,12 @@ module fpu_core(
     wire[6:0] B_mant;
         assign B_mant = B[6:0];
 
+    wire A_implicit = |A_exp;
+    wire B_implicit = |B_exp;
+
+    wire[7:0] A_mant_full = {A_implicit, A_mant & {7{A_implicit}}};
+    wire[7:0] B_mant_full = {B_implicit, B_mant & {7{B_implicit}}};
+
     //ERROR FLAGS
     wire raw_overflow, raw_underflow, raw_NAN;
 
@@ -36,9 +42,9 @@ module fpu_core(
 
     //Don't check mantissa here because we flush subnormals to zero
     wire A_is_zero;
-        assign A_is_zero = (A_exp == 15'h0000);
+        assign A_is_zero = (A_exp == 8'h00);
     wire B_is_zero;
-        assign B_is_zero = (B_exp == 15'h0000);
+        assign B_is_zero = (B_exp == 8'h00);
 
     wire either_zero;
         assign either_zero = A_is_zero || B_is_zero;
@@ -104,13 +110,13 @@ module fpu_core(
     always @(*) begin
         if(a_greater) begin
             exp_diff = A_exp - B_exp;
-            mantissa_to_align = {1'b1, B_mant};
+            mantissa_to_align = B_mant_full;
             EXP_ADD_SUB_RAW = A_exp;
         end 
         
         else begin
             exp_diff = B_exp - A_exp;
-            mantissa_to_align = {1'b1, A_mant};
+            mantissa_to_align = A_mant_full;
             EXP_ADD_SUB_RAW = B_exp;
         end
         
@@ -130,7 +136,7 @@ module fpu_core(
     reg[11:0] MANT_ADD_SUB_RAW;
 
     wire[7:0] larger_mantissa;
-        assign larger_mantissa = a_greater ? {(|A_exp), A_mant} : {(|B_exp), B_mant};    
+        assign larger_mantissa = a_greater ? A_mant_full : B_mant_full;
     
     reg eff_op;
 
@@ -158,16 +164,16 @@ module fpu_core(
     wire[7:0] recip_B;
     
     dividerLUT LUT(
-            .index(B_mant), .reciprocal(recip_B)
+            .index(B_mant_full[6:0]), .reciprocal(recip_B)
         );
 
     wire[7:0] dadda_wire;
-        assign dadda_wire = (op == `MUL) ? {(|B_exp), B_mant} : recip_B;
+        assign dadda_wire = (op == `MUL) ? B_mant_full : recip_B;
     
     wire[15:0] row1, row2;
     
     dadda_multiplier daddaMultiplier(
-            .a({(|A_exp), A_mant}),
+            .a(A_mant_full),
             .b(dadda_wire),
             .factor1(row1),
             .factor2(row2)
@@ -213,6 +219,7 @@ module fpu_core(
 
     wire[8:0] EXP_MUL_DIV_RAW;
         assign EXP_MUL_DIV_RAW = exp_mul_div_raw_reg;
+
     //NORMALIZING
     reg[11:0] norm_mant_wire;
     reg[8:0] norm_exp_wire;    
@@ -306,6 +313,7 @@ module fpu_core(
 
         if(is_arith && (raw_overflow || flag_div_by_zero))
             result = {result_sign_wire, 8'hFF, 7'h00};
+        
         if(is_arith && true_underflow)
             result = {result_sign_wire, 15'b0};
         
@@ -319,13 +327,13 @@ module fpu_core(
 
         if(op == `MUL && (A_is_inf || B_is_inf))
             result = {result_sign_wire, 8'hFF, 7'h00};
+            
         if(op == `MUL && either_zero)
             result = {result_sign_wire, 15'b0};
 
         //Only arith compute (mul, div, add, sub) can trigger flags
-        if(flag_NAN)
+        if(is_arith && flag_NAN)
             result = 16'h7FC0;
-        
     end
     
     wire deep_underflow_mul = (op == `MUL) && (mul_sum < 9'd127) && !either_zero;
@@ -333,7 +341,7 @@ module fpu_core(
     wire true_underflow = raw_underflow || deep_underflow_mul;
 
     assign flag_overflow = is_arith ? (raw_overflow && !either_inf && !flag_div_by_zero) : 1'b0;
-    assign flag_underflow = is_arith ? (true_underflow && !either_inf) : 1'b0;    
+    assign flag_underflow = is_arith ? (true_underflow && !either_inf && !either_zero) : 1'b0;    
     assign flag_NAN = is_arith ? raw_NAN : 1'b0;
 
 endmodule
