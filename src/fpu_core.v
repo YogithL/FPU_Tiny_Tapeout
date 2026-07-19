@@ -322,8 +322,8 @@ module fpu_core(
         
     end
     
-    wire deep_underflow_mul = (op == `MUL) && (mul_sum < 9'd127);
-    
+    wire deep_underflow_mul = (op == `MUL) && (mul_sum < 9'd127) && !either_zero;
+
     wire true_underflow = raw_underflow || deep_underflow_mul;
 
     assign flag_overflow = is_arith ? (raw_overflow && !either_inf && !flag_div_by_zero) : 1'b0;
