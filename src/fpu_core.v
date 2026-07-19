@@ -32,7 +32,7 @@ module fpu_core(
     wire flag_B_NAN;
         assign flag_B_NAN = (B[14:6] == 9'h1FF);
     wire either_nan;
-        assign either_nan = A_is_nan || B_is_nan;
+        assign either_nan = flag_A_NAN || flag_B_NAN;
 
     wire A_is_inf;
         assign A_is_inf = (A[14:0] == 15'h7F80);
