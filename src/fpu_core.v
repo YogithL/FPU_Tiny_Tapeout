@@ -340,8 +340,8 @@ module fpu_core(
 
     wire true_underflow = raw_underflow || deep_underflow_mul;
 
-    assign flag_overflow = is_arith ? (raw_overflow && !either_inf && !flag_div_by_zero) : 1'b0;
-    assign flag_underflow = is_arith ? (true_underflow && !either_inf && !either_zero) : 1'b0;    
+    assign flag_overflow = is_arith ? (raw_overflow && !either_inf && !flag_div_by_zero && !raw_NAN) : 1'b0;    
+    assign flag_underflow = is_arith ? (true_underflow && !either_inf && !either_zero && !raw_NAN) : 1'b0;    
     assign flag_NAN = is_arith ? raw_NAN : 1'b0;
 
 endmodule
