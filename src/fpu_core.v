@@ -28,45 +28,55 @@ module fpu_core(
     wire raw_overflow, raw_underflow, raw_NAN;
 
     wire flag_A_NAN;
-        assign flag_A_NAN = (A[14:6] == 9'h1FF);
+        assign flag_A_NAN = (A_exp == 8'hFF) && (A_mant != 7'b0);
     wire flag_B_NAN;
-        assign flag_B_NAN = (B[14:6] == 9'h1FF);
+        assign flag_B_NAN = (B_exp == 8'hFF) && (B_mant != 7'b0);
     wire either_nan;
         assign either_nan = flag_A_NAN || flag_B_NAN;
 
+    wire A_is_zero;
+        assign A_is_zero = ({A_exp, A_mant} == 15'h0000);
+    wire B_is_zero;
+        assign B_is_zero = ({B_exp, B_mant} == 15'h0000);
+    wire either_zero;
+        assign either_zero = A_is_zero || B_is_zero;
+    wire both_zero;
+        assign both_zero = A_is_zero && B_is_zero;
+
     wire A_is_inf;
-        assign A_is_inf = (A[14:0] == 15'h7F80);
+        assign A_is_inf = ({A_exp, A_mant} == 15'h7F80);
     wire B_is_inf;
-        assign B_is_inf = (B[14:0] == 15'h7F80);
+        assign B_is_inf = ({B_exp, B_mant} == 15'h7F80);
     wire either_inf;
         assign either_inf = A_is_inf || B_is_inf;
+    wire both_inf;
+        assign both_inf = A_is_inf && B_is_inf;
 
     wire flag_div_by_zero;
-        assign flag_div_by_zero = (op == `DIV) && (A[14:0] != 0) && (B[14:0] == 0);
-    
-    //wire flag_NAN; 
-        assign raw_NAN = (flag_A_NAN || flag_B_NAN) ||
-        // Infinity / Infinity
-        ((op == `DIV) && (A[14:0] == 15'h7F80) && (B[14:0] == 15'h7F80)) ||
-        
-        // 0 / 0
-        ((op == `DIV) && (A[14:0] == 15'h0000) && (B[14:0] == 15'h0000)) ||
-        
-        // 0 * Infinity or Infinity * 0
-        ((op == `MUL) && (A[14:0] == 15'h0000) && (B[14:0] == 15'h7F80)) ||
-        ((op == `MUL) && (A[14:0] == 15'h7F80) && (B[14:0] == 15'h0000)) ||
-        
-        // +Infinity + -Infinity
-        ((op == `ADD) && (A[14:0] == 15'h7F80) && (B[14:0] == 15'h7F80) && (A[15] != B[15])) ||
-        
-        // Infinity - Infinity
-        ((op == `SUB) && (A[14:0] == 15'h7F80) && (B[14:0] == 15'h7F80) && (A[15] == B[15]));                               
+        assign flag_div_by_zero = (op == `DIV) && (!A_is_zero) && B_is_zero;
+
+    assign raw_NAN = either_nan ||
+                    // Infinity / Infinity
+                    ((op == `DIV) && both_inf) ||
+                    
+                    // 0 / 0
+                    ((op == `DIV) && both_zero) ||
+                    
+                    // 0 * Infinity or Infinity * 0
+                    ((op == `MUL) && ((A_is_zero && B_is_inf) ||
+                                    (A_is_inf  && B_is_zero))) ||
+                    
+                    // +Infinity + -Infinity
+                    ((op == `ADD) && both_inf && (A_sign != B_sign)) ||
+                    
+                    // Infinity - Infinity
+                    ((op == `SUB) && both_inf && (A_sign == B_sign));
 
     //MAGNITUDE COMPARISON
     wire a_greater;
-        assign a_greater = (A[14:0] > B[14:0]);
+        assign a_greater = ({A_exp, A_mant} > {B_exp, B_mant});
     wire a_b_equal;
-        assign a_b_equal = (A[14:0] == B[14:0]);
+        assign a_b_equal = ({A_exp, A_mant} == {B_exp, B_mant});    
     
     //SIGN GENERATION
     wire result_sign_wire;

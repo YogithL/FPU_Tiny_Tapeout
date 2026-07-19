@@ -67,7 +67,7 @@ def goldenModel(A, B, op, acc, acc_reg_val):
                 flag_NAN = 1
                 result_int = 0x7FC0
 
-    elif exponent == 0 :
+    elif exponent == 0:
         if mantissa != 0:
             flag_underflow = 1
             result_int = result_int & 0x8000
