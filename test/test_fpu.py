@@ -19,17 +19,10 @@ class ALU_Ops(IntEnum):
     NOP = 7  
 
 def goldenModel(A, B, op, acc, acc_reg_val):
-    A_bfloat = np.array([A], dtype=np.uint16).view(ml_dtypes.bfloat16)
-    B_bfloat = np.array([B], dtype=np.uint16).view(ml_dtypes.bfloat16)
-    is_arithmetic = op in [ALU_Ops.ADD, ALU_Ops.SUB, ALU_Ops.MUL, ALU_Ops.DIV]
-
-    if acc == 1:
-        A_bfloat = np.array([acc_reg_val], dtype=np.uint16).view(ml_dtypes.bfloat16)
-
-    flag_NAN = flag_overflow = flag_underflow = 0   
+    A_val_int = acc_reg_val if acc == 1 else A
+    B_val_int = B
     
-    A_val_int = int(A_bfloat.view(np.uint16)[0])
-    B_val_int = int(B_bfloat.view(np.uint16)[0])
+    is_arithmetic = op in [ALU_Ops.ADD, ALU_Ops.SUB, ALU_Ops.MUL, ALU_Ops.DIV]
     
     if is_arithmetic:
         if ((A_val_int >> 7) & 0xFF) == 0: 
@@ -38,6 +31,11 @@ def goldenModel(A, B, op, acc, acc_reg_val):
         if ((B_val_int >> 7) & 0xFF) == 0: 
             B_val_int = B_val_int & 0x8000
 
+    A_bfloat = np.array([A_val_int], dtype=np.uint16).view(ml_dtypes.bfloat16)
+    B_bfloat = np.array([B_val_int], dtype=np.uint16).view(ml_dtypes.bfloat16)
+
+    flag_NAN = flag_overflow = flag_underflow = 0   
+    
     A_is_inf = (A_val_int & 0x7FFF) == 0x7F80
     B_is_inf = (B_val_int & 0x7FFF) == 0x7F80
     
@@ -45,19 +43,23 @@ def goldenModel(A, B, op, acc, acc_reg_val):
 
     if op == ALU_Ops.ADD:
         result_bfloat = A_bfloat + B_bfloat
+    
     elif op == ALU_Ops.SUB:
         result_bfloat = A_bfloat - B_bfloat
+    
     elif op == ALU_Ops.MUL:
         result_bfloat = A_bfloat * B_bfloat
+    
     elif op == ALU_Ops.DIV:
         result_bfloat = A_bfloat / B_bfloat
     
     elif op == ALU_Ops.NEG:
-        val_int = int(A_bfloat.view(np.uint16)[0])
-        result_int = val_int ^ 0x8000
+        result_int = A_val_int ^ 0x8000
         return result_int, 0, 0, 0
+    
     elif op == ALU_Ops.ABS:
-        result_bfloat = np.abs(A_bfloat)
+        result_int = A_val_int & 0x7FFF
+        return result_int, 0, 0, 0
     
     elif op == ALU_Ops.SLT:
         slt_val = 0x3F80 if (A_bfloat < B_bfloat)[0] else 0x0000
@@ -65,6 +67,7 @@ def goldenModel(A, B, op, acc, acc_reg_val):
     
     elif op == ALU_Ops.NOP:
         result_bfloat = np.array([acc_reg_val], dtype=np.uint16).view(ml_dtypes.bfloat16)
+    
     else:
         result_bfloat = np.array([0], dtype=np.uint16).view(ml_dtypes.bfloat16)
     
@@ -102,7 +105,6 @@ def goldenModel(A, B, op, acc, acc_reg_val):
         flag_NAN = 0
 
     return result_int, flag_underflow, flag_overflow, flag_NAN
-
 
 @vsc.randobj
 class FPUTransaction:
