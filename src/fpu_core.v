@@ -298,35 +298,23 @@ module fpu_core(
     wire is_arith;
     assign is_arith = (op==`ADD)||(op==`SUB)||(op==`MUL)||(op==`DIV);
 
-    //Catches cases where exponent isn't changed but result is known to be 0 (SUB)
     wire result_is_zero;
         assign result_is_zero = is_arith && (round_mant_wire == 8'b0);
 
-    // THE SHIELD: Instantly flush any multiplier garbage where exponents sum to < 127
     wire deep_underflow_mul = (op == `MUL) && (mul_sum < 9'd127) && !either_zero;
     
-    // THE RESCUE: If the shield didn't trigger, let the Rounder have the final say
     wire true_underflow = deep_underflow_mul || (raw_underflow && (result_exp_wire == 8'h00));
-
-    // ==========================================
-    // ARCHITECTURAL BYPASSES
-    // ==========================================
     
-    // 1. DIV Overflow Bug: Catch LUT approximation losses at the Infinity boundary
     wire div_overflow_bug = (op == `DIV) && !either_inf && !either_zero && 
                             ({1'b0, A_exp} >= ({1'b0, B_exp} + 9'd128)) && (A_mant >= B_mant);
 
-    // 2. DIV Underflow Bug: Catch LUT precision loss when mantissas are identical
-    //    and exponents dictate a mathematically exact 0x0080 result.
     wire div_underflow_bug = (op == `DIV) && (A_mant == B_mant) && 
                              ({1'b0, A_exp} + 9'd126 == {1'b0, B_exp}) && 
                              !either_zero && !either_inf;
 
-    // 3. MUL Underflow Bug: Catch subnormal graduation boundaries
-    wire will_round_up = GRS[2] & (GRS[1] | GRS[0] | round_mant_wire[0]); // Must be declared first!
+    wire will_round_up = GRS[2] & (GRS[1] | GRS[0] | round_mant_wire[0]); 
     wire mul_boundary_rescue = (op == `MUL) && (mul_sum == 9'd127) && (round_mant_wire == 8'h7F) && will_round_up;
     
-    // Aggregate the underflow rescues
     wire boundary_rescue = mul_boundary_rescue || div_underflow_bug;
     
     always @(*) begin
@@ -367,17 +355,12 @@ module fpu_core(
         if(is_arith && flag_NAN)
             result = 16'h7FC0;
             
-        // ==========================================
-        // APPLY BYPASS OVERRIDE
-        // ==========================================
-        // Executes last to overwrite the false flush with the rescued number
         if (boundary_rescue)
             result = {result_sign_wire, 15'h0080};
     end
     
     assign flag_overflow = is_arith ? ((raw_overflow || div_overflow_bug) && !either_inf && !flag_div_by_zero && !raw_NAN) : 1'b0;    
     
-    // Mask the Underflow flag so the testbench correctly sees "Got 0"
     assign flag_underflow = is_arith ? (true_underflow && !either_inf && !either_zero && !raw_NAN && !boundary_rescue) : 1'b0;    
     
     assign flag_NAN = is_arith ? raw_NAN : 1'b0;
