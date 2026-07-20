@@ -294,7 +294,7 @@ def get_adversarial_B(A):
 #         ##########################################
 
 
-Logical sweep
+#Logical sweep
 @cocotb.test()
 async def test_project(dut):
 
