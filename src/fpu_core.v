@@ -167,8 +167,13 @@ module fpu_core(
             .index(B_mant_full[6:0]), .reciprocal(recip_B)
         );
 
+    wire recip_exact_pow2 = (B_mant_full[6:0] == 7'b0);
+
+    wire[7:0] recip_B_fixed;
+        assign recip_B_fixed = recip_exact_pow2 ? 8'b10000000 : recip_B;
+
     wire[7:0] dadda_wire;
-        assign dadda_wire = (op == `MUL) ? B_mant_full : recip_B;
+        assign dadda_wire = (op == `MUL) ? B_mant_full : recip_B_fixed;
     
     wire[15:0] row1, row2;
     
@@ -195,7 +200,7 @@ module fpu_core(
     reg[8:0] exp_mul_div_raw_reg;
     
     wire [8:0] mul_sum = {1'b0, A_exp} + {1'b0, B_exp};
-    wire [8:0] div_sum = {1'b0, A_exp} + 9'd127;
+    wire [8:0] div_sum = {1'b0, A_exp} + 9'd127 + {8'b0, recip_exact_pow2};
 
     always @(*) begin
         if(op == `MUL) begin
