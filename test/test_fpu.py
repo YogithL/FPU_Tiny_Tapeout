@@ -90,9 +90,9 @@ def goldenModel(A, B, op, acc, acc_reg_val):
 
     elif exponent == 0:
         if mantissa != 0:
-            flag_underflow = 1
-            result_int = result_int & 0x8000
-        
+            if is_arithmetic:
+                flag_underflow = 1
+                result_int = result_int & 0x8000        
         else:                
             if op == ALU_Ops.MUL and not A_is_zero and not B_is_zero:
                 flag_underflow = 1
