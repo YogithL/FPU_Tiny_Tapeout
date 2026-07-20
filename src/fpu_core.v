@@ -294,13 +294,23 @@ module fpu_core(
             SLT = 16'h0000;
     end
 
-    //FINAL RESULT MUXING
+//FINAL RESULT MUXING
     wire is_arith;
     assign is_arith = (op==`ADD)||(op==`SUB)||(op==`MUL)||(op==`DIV);
+
+    // Catch LUT approximation losses at the Infinity boundary
+    wire div_overflow_bug = (op == `DIV) && !either_inf && !either_zero && 
+                            ({1'b0, A_exp} >= ({1'b0, B_exp} + 9'd128)) && (A_mant >= B_mant);
 
     //Catches cases where exponent isn't changed but result is known to be 0 (SUB)
     wire result_is_zero;
         assign result_is_zero = is_arith && (round_mant_wire == 8'b0);
+
+    // THE SHIELD: Instantly flush any multiplier garbage where exponents sum to < 127
+    wire deep_underflow_mul = (op == `MUL) && (mul_sum < 9'd127) && !either_zero;
+    
+    // THE RESCUE: If the shield didn't trigger, let the Rounder have the final say
+    wire true_underflow = deep_underflow_mul || (raw_underflow && (result_exp_wire == 8'h00));
 
     always @(*) begin
         accumulate_enable = 1'b1;
@@ -316,7 +326,7 @@ module fpu_core(
             default: accumulate_enable = 1'b0;
         endcase
 
-        if(is_arith && (raw_overflow || flag_div_by_zero))
+        if(is_arith && (raw_overflow || div_overflow_bug || flag_div_by_zero))
             result = {result_sign_wire, 8'hFF, 7'h00};
         
         if(is_arith && true_underflow)
@@ -335,24 +345,14 @@ module fpu_core(
         
         if(op == `MUL && either_zero)
             result = {result_sign_wire, 15'b0};
-        
-        if(boundary_rescue)
-            result = {result_sign_wire, 15'h0080};
 
         //Only arith compute (mul, div, add, sub) can trigger flags
         if(is_arith && flag_NAN)
             result = 16'h7FC0;
     end
     
-    wire will_round_up = GRS[2] & (GRS[1] | GRS[0] | round_mant_wire[0]);
-    wire boundary_rescue = (op == `MUL) && (mul_sum == 9'd127) && (round_mant_wire == 8'h7F) && will_round_up;
-
-    wire deep_underflow_mul = (op == `MUL) && (mul_sum < 9'd127) && !either_zero;
-
-    wire true_underflow = (raw_underflow && (round_exp_wire == 8'h00));
-
-    assign flag_overflow = is_arith ? (raw_overflow && !either_inf && !flag_div_by_zero && !raw_NAN) : 1'b0;    
-    assign flag_underflow = is_arith ? (true_underflow && !either_inf && !either_zero && !raw_NAN && !boundary_rescue) : 1'b0;    
+    assign flag_overflow = is_arith ? ((raw_overflow || div_overflow_bug) && !either_inf && !flag_div_by_zero && !raw_NAN) : 1'b0;    
+    assign flag_underflow = is_arith ? (true_underflow && !either_inf && !either_zero && !raw_NAN) : 1'b0;    
     assign flag_NAN = is_arith ? raw_NAN : 1'b0;
 
 endmodule
