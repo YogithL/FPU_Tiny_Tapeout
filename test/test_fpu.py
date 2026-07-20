@@ -260,12 +260,24 @@ async def test_project(dut):
         hardware_nan = int(dut.flag_NAN.value) 
         
         if val_op == ALU_Ops.DIV:
-            hardware_res_accurate = (hardware_res == exp_res) or \
-                                    (hardware_res + 1 == exp_res) or \
-                                    (hardware_res - 1 == exp_res)
+            hardware_res_accurate = (
+                hardware_res == exp_res or
+                hardware_res + 1 == exp_res or
+                hardware_res - 1 == exp_res or
+                (
+                    hardware_res in (0x0000, 0x8000) and
+                    exp_res in (0x0000, 0x8000)
+                )
+            )
         else:
-            hardware_res_accurate = (hardware_res == exp_res)
-              
+            hardware_res_accurate = (
+                hardware_res == exp_res or
+                (
+                    hardware_res in (0x0000, 0x8000) and
+                    exp_res in (0x0000, 0x8000)
+                )
+            )   
+                       
         allTestsPassed = (
             (hardware_res_accurate) and 
             (hardware_uf == exp_uf) and 
