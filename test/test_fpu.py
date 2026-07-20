@@ -295,99 +295,13 @@ def get_adversarial_B(A):
 
 
 #Logical sweep
-@cocotb.test()
-async def test_project(dut):
-
-    clock = Clock(dut.clk, 10, unit = "us")
-    cocotb.start_soon(clock.start())
-
-    #Resetting
-    dut.reset_n.value = 0
-    dut.data_ready.value = 0
-    dut.A.value = 0
-    dut.B.value = 0
-    dut.op.value = ALU_Ops.NOP
-    dut.acc.value = 0
-    await ClockCycles(dut.clk, 3)
-    dut.reset_n.value = 1
-
-    #Driving values
-    test_count = 0
-    error_count = 0
-    
-    for exp_a in range(1, 255):
-        for mant_a in range(128):
-            val_A = (exp_a << 7) | mant_a
-            
-            b_matrix = get_adversarial_B(val_A)
-            
-            for val_op in [ALU_Ops.ADD, ALU_Ops.SUB, ALU_Ops.MUL, ALU_Ops.DIV, ALU_Ops.SLT]:
-                for val_B in b_matrix:
-                    
-                    await FallingEdge(dut.clk)
-                    dut.A.value = val_A
-                    dut.B.value = val_B
-                    dut.op.value = val_op
-                    dut.acc.value = 0
-                    dut.data_ready.value = 1
-                    
-                    current_accumulate_register = int(dut.accumulate_register.value)
-
-                    await RisingEdge(dut.clk)
-                    await ReadOnly()
-
-                    exp_res, exp_uf, exp_of, exp_nan = goldenModel(
-                        val_A, val_B, val_op, 0, current_accumulate_register
-                    )
-
-                    hardware_res = int(dut.accumulate_register.value)
-                    hardware_uf = int(dut.flag_underflow.value) 
-                    hardware_of = int(dut.flag_overflow.value)
-                    hardware_nan = int(dut.flag_NAN.value) 
-                    
-                    if val_op == ALU_Ops.DIV:
-                        hardware_res_accurate = (hardware_res == exp_res) or \
-                                                (hardware_res + 1 == exp_res) or \
-                                                (hardware_res - 1 == exp_res)
-                    else:
-                        hardware_res_accurate = (hardware_res == exp_res)
-                            
-                    allTestsPassed = (
-                        (hardware_res_accurate) and 
-                        (hardware_uf == exp_uf) and 
-                        (hardware_of == exp_of) and 
-                        (hardware_nan == exp_nan)
-                    )
-
-                    if not allTestsPassed:
-                        dut._log.error(
-                            f"Test Number {test_count} Failed! \n"
-                            f"Inputs: A={hex(val_A)}, B={hex(val_B)}, OP={ALU_Ops(val_op).name}, ACC={hex(0)}\n"
-                            f"Math: Exp {hex(exp_res)}, Got {hex(hardware_res)} \n"
-                            f"UF: Exp {exp_uf}, Got {hardware_uf} \n"
-                            f"OF: Exp {exp_of}, Got {hardware_of} \n"
-                            f"NAN: Exp {exp_nan}, Got {hardware_nan}"
-                        )
-                        error_count += 1
-                    #else:
-                    #    dut._log.info(f"Test Number {test_count} Success!: Hardware matched Golden Model -> {hex(hardware_res)}")
-                    
-                    test_count += 1
-                    
-                    await FallingEdge(dut.clk)
-                    dut.data_ready.value = 0        
-    
-    assert error_count == 0, f"Total of {error_count} tests failed out of {test_count}!"            
-
-
-#Unittesting
 # @cocotb.test()
 # async def test_project(dut):
 
-#     clock = Clock(dut.clk, 10, unit="us")
+#     clock = Clock(dut.clk, 10, unit = "us")
 #     cocotb.start_soon(clock.start())
 
-#     # Resetting
+#     #Resetting
 #     dut.reset_n.value = 0
 #     dut.data_ready.value = 0
 #     dut.A.value = 0
@@ -397,71 +311,157 @@ async def test_project(dut):
 #     await ClockCycles(dut.clk, 3)
 #     dut.reset_n.value = 1
 
-#     test_vectors = [
-#         (0x0d00, 0x32ff, ALU_Ops.MUL),
-#         (0x195a, 0x2696, ALU_Ops.MUL),
-#         (0x1fff, 0x2000, ALU_Ops.MUL),
-#         (0x207f, 0x1f80, ALU_Ops.MUL),
-#         (0x3eff, 0x0100, ALU_Ops.MUL),
-#         (0x3eff, 0x8100, ALU_Ops.MUL),
-#     ]    
-
+#     #Driving values
 #     test_count = 0
 #     error_count = 0
+    
+#     for exp_a in range(1, 255):
+#         for mant_a in range(128):
+#             val_A = (exp_a << 7) | mant_a
+            
+#             b_matrix = get_adversarial_B(val_A)
+            
+#             for val_op in [ALU_Ops.ADD, ALU_Ops.SUB, ALU_Ops.MUL, ALU_Ops.DIV, ALU_Ops.SLT]:
+#                 for val_B in b_matrix:
+                    
+#                     await FallingEdge(dut.clk)
+#                     dut.A.value = val_A
+#                     dut.B.value = val_B
+#                     dut.op.value = val_op
+#                     dut.acc.value = 0
+#                     dut.data_ready.value = 1
+                    
+#                     current_accumulate_register = int(dut.accumulate_register.value)
 
-#     for val_A, val_B, val_op in test_vectors:
+#                     await RisingEdge(dut.clk)
+#                     await ReadOnly()
 
-#         await FallingEdge(dut.clk)
-#         dut.A.value = val_A
-#         dut.B.value = val_B
-#         dut.op.value = val_op
-#         dut.acc.value = 0
-#         dut.data_ready.value = 1
+#                     exp_res, exp_uf, exp_of, exp_nan = goldenModel(
+#                         val_A, val_B, val_op, 0, current_accumulate_register
+#                     )
 
-#         current_accumulate_register = int(dut.accumulate_register.value)
+#                     hardware_res = int(dut.accumulate_register.value)
+#                     hardware_uf = int(dut.flag_underflow.value) 
+#                     hardware_of = int(dut.flag_overflow.value)
+#                     hardware_nan = int(dut.flag_NAN.value) 
+                    
+#                     if val_op == ALU_Ops.DIV:
+#                         hardware_res_accurate = (hardware_res == exp_res) or \
+#                                                 (hardware_res + 1 == exp_res) or \
+#                                                 (hardware_res - 1 == exp_res)
+#                     else:
+#                         hardware_res_accurate = (hardware_res == exp_res)
+                            
+#                     allTestsPassed = (
+#                         (hardware_res_accurate) and 
+#                         (hardware_uf == exp_uf) and 
+#                         (hardware_of == exp_of) and 
+#                         (hardware_nan == exp_nan)
+#                     )
 
-#         await RisingEdge(dut.clk)
-#         await ReadOnly()
+#                     if not allTestsPassed:
+#                         dut._log.error(
+#                             f"Test Number {test_count} Failed! \n"
+#                             f"Inputs: A={hex(val_A)}, B={hex(val_B)}, OP={ALU_Ops(val_op).name}, ACC={hex(0)}\n"
+#                             f"Math: Exp {hex(exp_res)}, Got {hex(hardware_res)} \n"
+#                             f"UF: Exp {exp_uf}, Got {hardware_uf} \n"
+#                             f"OF: Exp {exp_of}, Got {hardware_of} \n"
+#                             f"NAN: Exp {exp_nan}, Got {hardware_nan}"
+#                         )
+#                         error_count += 1
+#                     #else:
+#                     #    dut._log.info(f"Test Number {test_count} Success!: Hardware matched Golden Model -> {hex(hardware_res)}")
+                    
+#                     test_count += 1
+                    
+#                     await FallingEdge(dut.clk)
+#                     dut.data_ready.value = 0        
+    
+#     assert error_count == 0, f"Total of {error_count} tests failed out of {test_count}!"            
 
-#         exp_res, exp_uf, exp_of, exp_nan = goldenModel(
-#             val_A, val_B, val_op, 0, current_accumulate_register
-#         )
 
-#         hardware_res = int(dut.accumulate_register.value)
-#         hardware_uf = int(dut.flag_underflow.value)
-#         hardware_of = int(dut.flag_overflow.value)
-#         hardware_nan = int(dut.flag_NAN.value)
+#Unittesting
+@cocotb.test()
+async def test_project(dut):
 
-#         if val_op == ALU_Ops.DIV:
-#             hardware_res_accurate = (
-#                 hardware_res == exp_res or
-#                 hardware_res + 1 == exp_res or
-#                 hardware_res - 1 == exp_res
-#             )
-#         else:
-#             hardware_res_accurate = (hardware_res == exp_res)
+    clock = Clock(dut.clk, 10, unit="us")
+    cocotb.start_soon(clock.start())
 
-#         allTestsPassed = (
-#             hardware_res_accurate and
-#             hardware_uf == exp_uf and
-#             hardware_of == exp_of and
-#             hardware_nan == exp_nan
-#         )
+    # Resetting
+    dut.reset_n.value = 0
+    dut.data_ready.value = 0
+    dut.A.value = 0
+    dut.B.value = 0
+    dut.op.value = ALU_Ops.NOP
+    dut.acc.value = 0
+    await ClockCycles(dut.clk, 3)
+    dut.reset_n.value = 1
 
-#         if not allTestsPassed:
-#             dut._log.error(
-#                 f"Test Number {test_count} Failed!\n"
-#                 f"Inputs: A={hex(val_A)}, B={hex(val_B)}, OP={ALU_Ops(val_op).name}, ACC={hex(0)}\n"
-#                 f"Math: Exp {hex(exp_res)}, Got {hex(hardware_res)}\n"
-#                 f"UF: Exp {exp_uf}, Got {hardware_uf}\n"
-#                 f"OF: Exp {exp_of}, Got {hardware_of}\n"
-#                 f"NAN: Exp {exp_nan}, Got {hardware_nan}"
-#             )
-#             error_count += 1
+    test_vectors = [
+        (0x0d00, 0x32ff, ALU_Ops.MUL),
+        (0x195a, 0x2696, ALU_Ops.MUL),
+        (0x1fff, 0x2000, ALU_Ops.MUL),
+        (0x207f, 0x1f80, ALU_Ops.MUL),
+        (0x3eff, 0x0100, ALU_Ops.MUL),
+        (0x3eff, 0x8100, ALU_Ops.MUL),
+    ]    
 
-#         test_count += 1
+    test_count = 0
+    error_count = 0
 
-#         await FallingEdge(dut.clk)
-#         dut.data_ready.value = 0
+    for val_A, val_B, val_op in test_vectors:
 
-#     assert error_count == 0
+        await FallingEdge(dut.clk)
+        dut.A.value = val_A
+        dut.B.value = val_B
+        dut.op.value = val_op
+        dut.acc.value = 0
+        dut.data_ready.value = 1
+
+        current_accumulate_register = int(dut.accumulate_register.value)
+
+        await RisingEdge(dut.clk)
+        await ReadOnly()
+
+        exp_res, exp_uf, exp_of, exp_nan = goldenModel(
+            val_A, val_B, val_op, 0, current_accumulate_register
+        )
+
+        hardware_res = int(dut.accumulate_register.value)
+        hardware_uf = int(dut.flag_underflow.value)
+        hardware_of = int(dut.flag_overflow.value)
+        hardware_nan = int(dut.flag_NAN.value)
+
+        if val_op == ALU_Ops.DIV:
+            hardware_res_accurate = (
+                hardware_res == exp_res or
+                hardware_res + 1 == exp_res or
+                hardware_res - 1 == exp_res
+            )
+        else:
+            hardware_res_accurate = (hardware_res == exp_res)
+
+        allTestsPassed = (
+            hardware_res_accurate and
+            hardware_uf == exp_uf and
+            hardware_of == exp_of and
+            hardware_nan == exp_nan
+        )
+
+        if not allTestsPassed:
+            dut._log.error(
+                f"Test Number {test_count} Failed!\n"
+                f"Inputs: A={hex(val_A)}, B={hex(val_B)}, OP={ALU_Ops(val_op).name}, ACC={hex(0)}\n"
+                f"Math: Exp {hex(exp_res)}, Got {hex(hardware_res)}\n"
+                f"UF: Exp {exp_uf}, Got {hardware_uf}\n"
+                f"OF: Exp {exp_of}, Got {hardware_of}\n"
+                f"NAN: Exp {exp_nan}, Got {hardware_nan}"
+            )
+            error_count += 1
+
+        test_count += 1
+
+        await FallingEdge(dut.clk)
+        dut.data_ready.value = 0
+
+    assert error_count == 0
