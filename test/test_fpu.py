@@ -282,7 +282,7 @@ async def test_project(dut):
             f"NAN: Exp {exp_nan}, Got {hardware_nan}"
         )
         
-        dut._log.info(f"Test Number {i} Success!: Hardware matched Golden Model -> {hex(hardware_res)}")    ##########################################
+        #dut._log.info(f"Test Number {i} Success!: Hardware matched Golden Model -> {hex(hardware_res)}")    ##########################################
         ##########################################
         
 
