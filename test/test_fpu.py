@@ -401,7 +401,7 @@ async def test_project(dut):
     error_count = 0
 
     val_A = 0x4100
-    val_B = 0x0100
+    val_B = 0x8100
     val_op = ALU_Ops.DIV
     
     await FallingEdge(dut.clk)
