@@ -335,18 +335,24 @@ module fpu_core(
         
         if(op == `MUL && either_zero)
             result = {result_sign_wire, 15'b0};
+        
+        if(boundary_rescue)
+            result = {result_sign_wire, 15'h0080};
 
         //Only arith compute (mul, div, add, sub) can trigger flags
         if(is_arith && flag_NAN)
             result = 16'h7FC0;
     end
     
+    wire will_round_up = GRS[2] & (GRS[1] | GRS[0] | round_mant_wire[0]);
+    wire boundary_rescue = (op == `MUL) && (mul_sum == 9'd127) && (round_mant_wire == 8'h7F) && will_round_up;
+
     wire deep_underflow_mul = (op == `MUL) && (mul_sum < 9'd127) && !either_zero;
 
-    wire true_underflow = raw_underflow || deep_underflow_mul;
+    wire true_underflow = (raw_underflow && (round_exp_wire == 8'h00));
 
     assign flag_overflow = is_arith ? (raw_overflow && !either_inf && !flag_div_by_zero && !raw_NAN) : 1'b0;    
-    assign flag_underflow = is_arith ? (true_underflow && !either_inf && !either_zero && !raw_NAN) : 1'b0;    
+    assign flag_underflow = is_arith ? (true_underflow && !either_inf && !either_zero && !raw_NAN && !boundary_rescue) : 1'b0;    
     assign flag_NAN = is_arith ? raw_NAN : 1'b0;
 
 endmodule
