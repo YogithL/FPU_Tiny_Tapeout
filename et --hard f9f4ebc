@@ -1,0 +1,85 @@
+[33mcd0e02a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m 64, Old again
+[33mc3c4ece[m 63, Old normalizer
+[33m106b476[m Take 62
+[33mf9f4ebc[m Take 61
+[33m3d9271c[m Take #60
+[33m767aa90[m Take #59
+[33md2362cf[m Take #58
+[33meda226e[m Take #58
+[33mf94abae[m Take #57
+[33m2e3ec54[m Rerun, more IO friendly debug log to huge
+[33md352482[m Take #56 new logic sweep, minor error
+[33mb5aa25c[m #New logical sweep, removing reduancies, final test
+[33m1372c8a[m Talk #55
+[33m4e1304c[m Test 53, 4000 tests sucessful! Time for test 54, 10,000 tests.
+[33mb5a8bd2[m Take #53
+[33mc23f09d[m Take #52
+[33m12af45f[m Take #51
+[33m1150638[m Take #50
+[33mf69307d[m Take #49
+[33m84431f0[m Take #48
+[33m3a86bce[m Take #47
+[33m976ce7a[m Take #46
+[33m0d05e90[m Take #45
+[33me246b2b[m Take #44
+[33m23d6280[m Take 43: Failed early
+[33m909c533[m #Finally success with 100 tests after 42 takes of editting. Now will run for 30 minutes owrth of tests
+[33m94d3e55[m Take #42 Fix flag handling for arithmetic operations in fpu_core
+[33m1f1fdbb[m Take #41
+[33m6d8d26e[m Take 40 Add deep underflow handling for multiplication in FPU core
+[33mdf52765[m Take #39
+[33me670652[m Take 38
+[33m71e42f2[m Take #37
+[33m1de1f86[m Take #36 Add either_inf wire and update overflow/underflow flag logic
+[33meeec5df[m Take #35
+[33m66b41b1[m Take #34 Fix underflow flag handling for multiplication and division in goldenModel
+[33mfa45600[m Take #33 Refactor exponent calculation for multiply/divide operations in fpu_core
+[33mef81b9c[m Take 32
+[33md719e40[m Take #31
+[33md36c967[m Take #30
+[33mf4c40a3[m Take #29
+[33mca8a450[m Take #28 Refactor accumulate register logic and flag assignments in fpu_system module
+[33ma70ddd6[m Take #27 Refactor larger_mantissa assignment and simplify error handling in test_project
+[33m1c614f7[m Take #26 Fix mantissa assignment in fpu_core and improve error logging in test_fpu
+[33mc59ae7f[m Take #25 Add error handling for 'X/Z' state detection in FPU test
+[33ma8c8acb[m Take #24
+[33m6f4ce6b[m Take #23 Fix accumulate register reference in test_project function
+[33m505fcc7[m Take #22
+[33mbf69dcf[m Take #21
+[33m9d4b5bb[m Take #20
+[33mf9409ec[m Fix mantissa assignment in fpu_core and improve test_fpu structure
+[33m23d5a42[m Take #19
+[33m078e7d6[m Take #18 Fix goldenModel function to handle special ALU operations and adjust underflow flag logic
+[33m0c697d0[m Take #17 Refactor exponent calculation in fpu_core and improve underflow handling in normalizer
+[33m5a40875[m Take #16
+[33m45b3b97[m Take #15
+[33mfc8414a[m Take #14 Fix NEG operation in goldenModel to correctly negate bfloat representation
+[33m7e9ebba[m Take #13 Fix flag assignment for overflow, underflow, and NAN in fpu_core
+[33m7ac9076[m Take #12 Refactor error flag handling in fpu_core module
+[33m4505b95[m Take #11 Fix SLT operation and refine underflow/overflow handling in goldenModel
+[33m7d8383b[m Take #9
+[33m6a1e299[m Take #7
+[33m357ff37[m Take #6
+[33m9593baf[m Take #5
+[33m333f714[m Take #4
+[33m67aa044[m Take #3
+[33m688dc5d[m Take #2
+[33m8db0cc3[m Added base CRT
+[33m3290acd[m 2 minor fixes
+[33m8ec527d[m Success. Problem was the sampling of the hardware result was happening on exactly posedge, causing errors. Included readonly, now fixed. Ready for CRT, since skeleton is set and functionality proven.
+[33m9536f87[m TAKE #11
+[33m087292d[m TAKE #10
+[33m2a72458[m TAKE #9
+[33ma948ed5[m TAKE #8
+[33m1d378f1[m TAKE #7
+[33m95d42f4[m TAKE #6
+[33md1cc57a[m TAKE #5
+[33ma6f8e3f[m TAKE #4
+[33meddde9c[m TAKE #3
+[33mf2bc2f1[m TAKE 2
+[33m17d1a81[m Wrote a simple test case, want to makesure github actions and all work properly. TAKE #1
+[33m6dbccdc[m Created golden model using ml_dtypes bfloat16 package
+[33mc685768[m Repo ready to start verif. First step is to create golden model.
+[33me2ba8f7[m Edited makefiles and setup CAD suite
+[33m778a5e1[m Transferring source files from personal repo
+[33mc755671[m Initial commit
