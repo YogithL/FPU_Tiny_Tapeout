@@ -282,7 +282,15 @@ async def test_project(dut):
             f"NAN: Exp {exp_nan}, Got {hardware_nan}"
         )
         
-        dut._log.info(f"Test Number {i} Success!: Hardware matched Golden Model -> {hex(hardware_res)}")    ##########################################
+        dut._log.info(
+            f"Test Number {i} Passed! \n"
+            f"Inputs: A={hex(val_A)}, B={hex(val_B)}, OP={ALU_Ops(val_op).name}, ACC={hex(val_acc)}\n"
+            f"Math: Exp {hex(exp_res)}, Got {hex(hardware_res)} \n"
+            f"UF: Exp {exp_uf}, Got {hardware_uf} \n"
+            f"OF: Exp {exp_of}, Got {hardware_of} \n"
+            f"NAN: Exp {exp_nan}, Got {hardware_nan}"
+        )
+    ##########################################
         ##########################################
         
 
