@@ -17,7 +17,7 @@ module fpu_system(
     wire core_flag_NAN;
     wire core_flag_overflow;
     wire core_flag_underflow;    
-    
+     
     wire[15:0] input_a;
         assign input_a = acc ? accumulate_register : A;
         

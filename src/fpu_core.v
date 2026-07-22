@@ -167,8 +167,13 @@ module fpu_core(
             .index(B_mant_full[6:0]), .reciprocal(recip_B)
         );
 
+    wire recip_exact_pow2 = (B_mant_full[6:0] == 7'b0);
+
+    wire[7:0] recip_B_fixed;
+        assign recip_B_fixed = recip_exact_pow2 ? 8'b10000000 : recip_B;
+
     wire[7:0] dadda_wire;
-        assign dadda_wire = (op == `MUL) ? B_mant_full : recip_B;
+        assign dadda_wire = (op == `MUL) ? B_mant_full : recip_B_fixed;
     
     wire[15:0] row1, row2;
     
@@ -195,7 +200,7 @@ module fpu_core(
     reg[8:0] exp_mul_div_raw_reg;
     
     wire [8:0] mul_sum = {1'b0, A_exp} + {1'b0, B_exp};
-    wire [8:0] div_sum = {1'b0, A_exp} + 9'd127;
+    wire [8:0] div_sum = {1'b0, A_exp} + 9'd127 + {8'b0, recip_exact_pow2};
 
     always @(*) begin
         if(op == `MUL) begin
@@ -289,14 +294,29 @@ module fpu_core(
             SLT = 16'h0000;
     end
 
-    //FINAL RESULT MUXING
+//FINAL RESULT MUXING
     wire is_arith;
     assign is_arith = (op==`ADD)||(op==`SUB)||(op==`MUL)||(op==`DIV);
 
-    //Catches cases where exponent isn't changed but result is known to be 0 (SUB)
     wire result_is_zero;
         assign result_is_zero = is_arith && (round_mant_wire == 8'b0);
 
+    wire deep_underflow_mul = (op == `MUL) && (mul_sum < 9'd127) && !either_zero;
+    
+    wire true_underflow = deep_underflow_mul || (raw_underflow && (result_exp_wire == 8'h00));
+    
+    wire div_overflow_bug = (op == `DIV) && !either_inf && !either_zero && 
+                            ({1'b0, A_exp} >= ({1'b0, B_exp} + 9'd128)) && (A_mant >= B_mant);
+
+    wire div_underflow_bug = (op == `DIV) && (A_mant == B_mant) && 
+                             ({1'b0, A_exp} + 9'd126 == {1'b0, B_exp}) && 
+                             !either_zero && !either_inf;
+
+    wire will_round_up = GRS[2] & (GRS[1] | GRS[0] | round_mant_wire[0]); 
+    wire mul_boundary_rescue = (op == `MUL) && (mul_sum == 9'd127) && (round_mant_wire == 8'h7F) && will_round_up;
+    
+    wire boundary_rescue = mul_boundary_rescue || div_underflow_bug;
+    
     always @(*) begin
         accumulate_enable = 1'b1;
         result = 16'b0;
@@ -311,7 +331,7 @@ module fpu_core(
             default: accumulate_enable = 1'b0;
         endcase
 
-        if(is_arith && (raw_overflow || flag_div_by_zero))
+        if(is_arith && (raw_overflow || div_overflow_bug || flag_div_by_zero))
             result = {result_sign_wire, 8'hFF, 7'h00};
         
         if(is_arith && true_underflow)
@@ -334,14 +354,15 @@ module fpu_core(
         //Only arith compute (mul, div, add, sub) can trigger flags
         if(is_arith && flag_NAN)
             result = 16'h7FC0;
+            
+        if (boundary_rescue)
+            result = {result_sign_wire, 15'h0080};
     end
     
-    wire deep_underflow_mul = (op == `MUL) && (mul_sum < 9'd127) && !either_zero;
-
-    wire true_underflow = raw_underflow || deep_underflow_mul;
-
-    assign flag_overflow = is_arith ? (raw_overflow && !either_inf && !flag_div_by_zero && !raw_NAN) : 1'b0;    
-    assign flag_underflow = is_arith ? (true_underflow && !either_inf && !either_zero && !raw_NAN) : 1'b0;    
+    assign flag_overflow = is_arith ? ((raw_overflow || div_overflow_bug) && !either_inf && !flag_div_by_zero && !raw_NAN) : 1'b0;    
+    
+    assign flag_underflow = is_arith ? (true_underflow && !either_inf && !either_zero && !raw_NAN && !boundary_rescue) : 1'b0;    
+    
     assign flag_NAN = is_arith ? raw_NAN : 1'b0;
 
 endmodule
