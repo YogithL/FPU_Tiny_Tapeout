@@ -42,12 +42,17 @@ module normalizer(
             if(shift_amt >= exp_in) begin
                 flag_underflow = 1'b1;
                 exp_out = 9'd0;
-                if (exp_in == 9'd0) begin
+                
+                if(exp_in == 9'd0) begin
                     shifted = {1'b0, mant_in[11:1]};
-                end else begin
+                end 
+                
+                else begin
                     shifted = mant_in << (exp_in - 9'd1);
                 end
-            end else begin
+            end 
+            
+            else begin
                 flag_underflow = 1'b0;
                 exp_out = exp_in - shift_amt;
                 shifted = mant_in << shift_amt;
