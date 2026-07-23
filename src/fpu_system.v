@@ -37,7 +37,8 @@ module fpu_system(
             
             flag_overflow <= core_flag_overflow;
             flag_underflow <= core_flag_underflow;
-            flag_NAN <= core_flag_NAN;        
+            flag_NAN <= core_flag_NAN;       
+            result_ready <= 1'b1;
         end
         
         else begin
